@@ -1,0 +1,24 @@
+.App {
+  text-align: left;
+  transition: background-color 0.3s, color 0.3s; 
+  background-color: #ffffff;
+  color: #000000;
+}
+
+.App-header {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  transition: background-color 0.3s;
+}
+
+.bcds-header {
+  justify-content: normal !important;
+}
+
+.bcds-header--container {
+  max-width: 100% !important;
+}
