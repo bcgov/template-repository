@@ -1,0 +1,27 @@
+{
+  "files": {
+    "main.css": "/static/css/main.1fd3d798.css",
+    "main.js": "/static/js/main.fa1ce5bd.js",
+    "static/js/453.419a5d54.chunk.js": "/static/js/453.419a5d54.chunk.js",
+    "static/media/BCSans-Regular.woff": "/static/media/BCSans-Regular.f5dc3fe0266e943f919a.woff",
+    "static/media/BCSans-Light.woff": "/static/media/BCSans-Light.da391b9efe35162ec766.woff",
+    "static/media/BCSans-BoldItalic.woff": "/static/media/BCSans-BoldItalic.3e0ad839c21ed503a782.woff",
+    "static/media/BCSans-Bold.woff": "/static/media/BCSans-Bold.e8313acee8c46a6af21f.woff",
+    "static/media/BCSans-Italic.woff": "/static/media/BCSans-Italic.f48cfbe1f83de23efac6.woff",
+    "static/media/BCSans-LightItalic.woff": "/static/media/BCSans-LightItalic.d5e4ab46feef44fb9fcb.woff",
+    "static/media/BCSans-Regular.woff2": "/static/media/BCSans-Regular.907e1e3d9ed599095d49.woff2",
+    "static/media/BCSans-Light.woff2": "/static/media/BCSans-Light.9e36f96492585ee1795e.woff2",
+    "static/media/BCSans-BoldItalic.woff2": "/static/media/BCSans-BoldItalic.bc56fa27e856aec204df.woff2",
+    "static/media/BCSans-Bold.woff2": "/static/media/BCSans-Bold.8f6d33daf96396e5b815.woff2",
+    "static/media/BCSans-Italic.woff2": "/static/media/BCSans-Italic.035a3cc8cebbad26dd01.woff2",
+    "static/media/BCSans-LightItalic.woff2": "/static/media/BCSans-LightItalic.cc6b0797290d252bfd79.woff2",
+    "index.html": "/index.html",
+    "main.1fd3d798.css.map": "/static/css/main.1fd3d798.css.map",
+    "main.fa1ce5bd.js.map": "/static/js/main.fa1ce5bd.js.map",
+    "453.419a5d54.chunk.js.map": "/static/js/453.419a5d54.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.1fd3d798.css",
+    "static/js/main.fa1ce5bd.js"
+  ]
+}
