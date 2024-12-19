@@ -1,35 +1,32 @@
 const express = require('express');
-const { Pool } = require('pg');
 const router = express.Router();
-require('dotenv').config();
-
-
-const pool = new Pool({
-  user: process.env.POSTGRES_USER,
-  host: process.env.POSTGRES_HOST,
-  database: process.env.POSTGRES_DB,
-  password: process.env.POSTGRES_PASSWORD,
-  port: process.env.POSTGRES_PORT,
-});
+const db = require('./db');
+const { protectedRoute } = require('@bcgov/citz-imb-sso-express');
 
 // POST request to add a new form template
 router.post('/forms', async (req, res) => {
-  const { id, version, ministry_id, lastModified, title, form_id, dataSources, data } = req.body;
-
-  const dataSourcesString = JSON.stringify(dataSources);
+  const { id, version, ministry_id, lastModified, title, form_id, deployed_to, dataSources, data } = req.body;
 
   try {
+    const existingForm = await db('form_templates').where({ id }).first();
 
-    const existingForm = await pool.query('SELECT id FROM form_templates WHERE id = $1', [id]);
-
-    // If the form already exists
-    if (existingForm.rows.length > 0) {
+    if (existingForm) {
       return res.status(409).send({ id, message: 'Form template already exists' });
     }
 
-    await pool.query('INSERT INTO form_templates (id, version, ministry_id, last_modified, title, form_id, dataSources, data) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)', [id, version, ministry_id, lastModified, title, form_id, dataSourcesString, data]);
-    res.status(201).send({ id, message: 'Form template created successfully!' });
+    await db('form_templates').insert({
+      id,
+      version,
+      ministry_id,
+      last_modified: lastModified,
+      title,
+      form_id,
+      deployed_to,
+      dataSources: JSON.stringify(dataSources),
+      data,
+    });
 
+    res.status(201).send({ id, message: 'Form template created successfully!' });
   } catch (err) {
     console.error(err);
     res.status(500).send('Error creating form template');
@@ -41,10 +38,10 @@ router.get('/forms/:id', async (req, res) => {
   const { id } = req.params;
 
   try {
-    const result = await pool.query('SELECT * FROM form_templates WHERE id = $1', [id]);
+    const result = await db('form_templates').where({ id }).first();
 
-    if (result.rows.length > 0) {
-      res.status(200).json(result.rows[0]);
+    if (result) {
+      res.status(200).json(result);
     } else {
       res.status(404).send('Form template not found');
     }
@@ -54,37 +51,75 @@ router.get('/forms/:id', async (req, res) => {
   }
 });
 
-// GET request to retrieve the form template id with the latest version
+// GET request to retrieve the form template by deployment status or latest version
 router.get('/forms/form_id/:form_id', async (req, res) => {
   const { form_id } = req.params;
 
   try {
-    const result = await pool.query(`SELECT * FROM form_templates WHERE form_id = $1 ORDER BY version DESC LIMIT 1`, [form_id]);
+    const result = await db('form_templates')
+      .where({ form_id })
+      .orderByRaw(`
+        CASE 
+          WHEN deployed_to = 'prod' THEN 1
+          WHEN deployed_to = 'test' THEN 2
+          WHEN deployed_to = 'dev' THEN 3
+          ELSE 4
+        END,
+        CAST(version AS INTEGER) DESC
+      `)
+      .first();
 
-    if (result.rows.length > 0) {
-      res.status(200).json(result.rows[0]);
+    if (result) {
+      res.status(200).json(result);
     } else {
       res.status(404).send('Form template not found');
     }
   } catch (err) {
-    console.error(err);
+    console.error('Error retrieving form template:', err);
     res.status(500).send('Error retrieving form template');
   }
 });
 
-// GET request to list all form templates 
-router.get('/forms-list', async (req, res) => {
+// GET request to list all form templates
+router.get('/forms-list', protectedRoute(), async (req, res) => {
   try {
-    const result = await pool.query('SELECT * FROM form_templates');
+    const result = await db('form_templates').select('*');
 
-    if (result.rows.length > 0) {
-      res.status(200).json(result.rows);
+    if (result.length > 0) {
+      res.status(200).json(result);
     } else {
       res.status(404).send('No form templates found');
     }
   } catch (err) {
     console.error(err);
     res.status(500).send('Error retrieving form templates');
+  }
+});
+
+// PUT request to update the deployed status of a form
+router.put('/forms/update', protectedRoute(), async (req, res) => {
+  const { form_id, id, deployed_to } = req.body;
+
+  try {
+    // Clear deployed_to for other forms with the same form_id
+    await db('form_templates')
+      .where({ form_id })
+      .andWhereNot({ id })
+      .update({ deployed_to: "" });
+
+    // Update the deployed_to status for the specified form
+    const result = await db('form_templates')
+      .where({ id })
+      .update({ deployed_to });
+
+    if (result > 0) {
+      res.status(200).send({ id, message: 'Deployed status updated successfully!' });
+    } else {
+      res.status(404).send('Form template not found');
+    }
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Error updating deployed status');
   }
 });
 

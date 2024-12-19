@@ -1,11 +1,14 @@
 # Template Repository
- Template repository for the FormFoundry.
+
+ Template repository for the FormFoundry. Allows developers to upload JSON templates and preview them in [Kiln](https://github.com/bcgov/kiln)
 
 ## Setup Instructions
 
 Requirements:
 
 -   [Docker](https://docs.docker.com/engine/install/)
+-   [Pathfinder SSO](https://digital.gov.bc.ca/bcgov-common-components/pathfinder-sso/)
+-   [Kiln](https://github.com/bcgov/kiln)
 -   [Insomnia](https://insomnia.rest/download) (Or use any REST API Client)
 
 Clone the repository:
@@ -24,13 +27,13 @@ cd template-respository
 
 ## Configuration
 
-Copy and rename `.env.example` file to `.env` 
+Copy and rename `.env.example` file to `.env` both in the root and in /app/client:
 
 ```
 Copy-Item .env.example .env
 ```
 
-Update `SSO_CLIENT_ID` and `SSO_CLIENT_SECRET` variables in `.env` file with your credentials.
+Update variables in `.env` files with your credentials and congifurations.
 
 ## Docker Deployment
 
@@ -44,9 +47,20 @@ docker-compose build
 docker-compose up
 ```
 Server should be listening on `localhost:3000`
+
+## User Interface
+
+To log into Template Repository, you need to have a valid IDIR, create and assign the 'Developer' role to the IDIR in Pathfinder SSO.
+
+Once logged in you can:
+- Upload form templates
+- View templates that have been uploaded in a tabular format
+- Change the 'Deployment Status' of a template
+- Preview a template in Kiln
+
 ## API Calls
 
-Ensure your REST API client has `Client Credentials` authentication configured:
+Ensure your REST API client has SSO authentication configured:
 
 ```
 ACCESS TOKEN URL: 

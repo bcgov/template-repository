@@ -1,0 +1,23 @@
+.App {
+    text-align: left;
+    transition: background-color 0.3s, color 0.3s; 
+    background-color: #ffffff;
+    color: #000000;
+  }
+  
+  .bcds-header {
+    justify-content: normal !important;
+  }
+  
+  .bcds-header--container {
+    max-width: 100% !important;
+  }
+  
+  .login-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    height: 100vh;
+}
