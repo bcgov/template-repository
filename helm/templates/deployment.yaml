@@ -1,18 +1,18 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "template-repository.name" . }}
+  name: {{ .Release.Name }}
   labels:
-    {{- include "template-repository.labels" . | nindent 4 }}
+    app: {{ .Release.Name }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      app: {{ include "template-repository.name" . }}
+      app: {{ .Release.Name }}
   template:
     metadata:
       labels:
-        app: {{ include "template-repository.name" . }}
+        app: {{ .Release.Name }}
     spec:
       containers:
         - name: app
@@ -20,6 +20,9 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - containerPort: {{ .Values.app.port }}
+          env:
+            - name: NODE_ENV
+              value: "production"
           resources:
             requests:
               memory: {{ .Values.resources.requests.memory }}
