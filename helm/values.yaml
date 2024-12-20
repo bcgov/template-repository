@@ -5,6 +5,33 @@ image:
   tag: latest
   pullPolicy: Always
 
+deploy:
+  replicas: 1
+  applicationProperties:
+    enabled: false
+    mountPath: /deployments/config/
+    properties: '## Properties go here'
+  livenessProbe:
+    httpGet:
+      path: /
+      port: 3000
+  readinessProbe:
+    httpGet:
+      path: /
+      port: 3000
+  ports:
+    - name: http
+      port: 3000
+      protocol: TCP
+      targetPort: 3000
+  route:
+    enabled: true
+    targetPort: http
+    tls:
+      enabled: true
+      insecureEdgeTerminationPolicy: Redirect
+      termination: edge
+  serviceType: ClusterIP
 app:
   port: 3000
 
