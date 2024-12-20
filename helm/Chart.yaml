@@ -1,0 +1,6 @@
+apiVersion: v2
+name: template-repository
+description: Helm chart for Template Repository application
+type: application
+version: 0.1.0
+

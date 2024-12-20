@@ -1,0 +1,21 @@
+replicaCount: 2
+
+image:
+  repository: ghcr.io/bcgov/template-repository
+  tag: latest
+  pullPolicy: Always
+
+app:
+  port: 3000
+
+ingress:
+  enabled: true
+  hostname: template-repository.local
+
+resources:
+  requests:
+    memory: "256Mi"
+    cpu: "500m"
+  limits:
+    memory: "512Mi"
+    cpu: "1"
