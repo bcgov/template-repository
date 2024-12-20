@@ -67,7 +67,7 @@ jobs:
 
       - name: Deploy with Helm
         run: |
-          helm upgrade --install template-repository ./helm/app --namespace ${{ secrets.OPENSHIFT_DEV_NAMESPACE }} --set image.tag=${{ needs.build_and_push.outputs.image_tag }}
+          helm upgrade --install template-repository-app ./helm/app --namespace ${{ secrets.OPENSHIFT_DEV_NAMESPACE }} --set image.tag=${{ needs.build_and_push.outputs.image_tag }}
 
       - name: Trigger OpenShift Rollout
         run: |
