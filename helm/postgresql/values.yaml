@@ -6,3 +6,6 @@ postgresql:
   username: postgres
   password: postgres
   database: form_templates
+
+volumePermissions:
+  enabled: true
