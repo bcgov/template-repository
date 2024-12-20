@@ -7,5 +7,6 @@ postgresql:
   password: postgres
   database: form_templates
 
-volumePermissions:
-  enabled: true
+postgresql:
+  volumePermissions:
+    enabled: true
