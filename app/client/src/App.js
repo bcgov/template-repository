@@ -4,6 +4,8 @@ import Login from "./pages/Login";
 import FormList from "./pages/FormList";
 import NotAuthorized from "./pages/NotAuthorized";
 import { useSSO } from "@bcgov/citz-imb-sso-react";
+import "@bcgov/bc-sans/css/BC_Sans.css";
+import "./App.css"
 
 const App = () => {
   const { isAuthenticated, hasRoles } = useSSO();

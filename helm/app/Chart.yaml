@@ -1,0 +1,7 @@
+apiVersion: v2
+name: app
+version: 0.1.0
+dependencies:
+  - name: postgresql
+    version: 0.1.0
+    repository: file://../postgresql
