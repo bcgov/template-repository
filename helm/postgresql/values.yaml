@@ -1,0 +1,8 @@
+image:
+  repository: postgres
+  tag: 13
+
+postgresql:
+  username: postgres
+  password: postgres
+  database: form_templates

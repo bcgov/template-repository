@@ -1,0 +1,10 @@
+configMapName: template-repo-config
+secretName: template-repo-app-secrets
+
+image:
+  repository: my-app-image
+  tag: latest
+
+env:
+  APP_PORT: 3000
+  REACT_APP_ENV: dev
