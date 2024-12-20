@@ -2,6 +2,8 @@ FROM node:16
 
 WORKDIR /usr/app
 
+COPY ./.env ./.env
+
 # Express App
 COPY ./app/src/package*.json ./src/
 RUN npm install --prefix ./src
@@ -16,8 +18,8 @@ COPY ./app/client/package-lock.json ./package-lock.json
 RUN npm install
 
 COPY ./app/client/ .
-RUN npm run build
 
+RUN cp ../.env .env && npm run build
 
 WORKDIR /usr/app/src
 
@@ -26,4 +28,3 @@ ENV APP_PORT=${APP_PORT}
 EXPOSE ${APP_PORT}
 
 CMD ["sh", "-c", "npx knex migrate:latest && node index.js"]
-
