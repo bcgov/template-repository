@@ -2,6 +2,8 @@ FROM node:18
 
 WORKDIR /usr/app
 
+COPY ./.env ./.env
+
 # Express App
 COPY ./app/src/package*.json ./src/
 RUN npm install --prefix ./src
@@ -17,14 +19,12 @@ RUN npm install
 
 COPY ./app/client/ .
 
-RUN npm run build
+RUN cp ../.env .env && npm run build
 
 WORKDIR /usr/app/src
 
-# Environment Variables
 ARG APP_PORT
 ENV APP_PORT=${APP_PORT}
 EXPOSE ${APP_PORT}
 
-# Migrate the database and start the Node.js server
 CMD ["sh", "-c", "npx knex migrate:latest && node index.js"]

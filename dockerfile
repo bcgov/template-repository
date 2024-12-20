@@ -2,15 +2,13 @@ FROM node:18
 
 WORKDIR /usr/app
 
-COPY ./.env ./.env
-
-# Express App
+#Express app
 COPY ./app/src/package*.json ./src/
 RUN npm install --prefix ./src
 
 COPY ./app/src ./src
 
-# React App
+#React app
 WORKDIR /usr/app/client
 
 COPY ./app/client/package*.json ./package.json
@@ -19,7 +17,7 @@ RUN npm install
 
 COPY ./app/client/ .
 
-RUN cp ../.env .env && npm run build
+RUN npm run build
 
 WORKDIR /usr/app/src
 
