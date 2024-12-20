@@ -24,13 +24,13 @@ spec:
                 name: {{ .Values.secretName }}
           volumeMounts:
             - name: env-volume
-              mountPath: /usr/app/.env
+              mountPath: /usr/app/client/.env
               subPath: .env
           command:
             - sh
             - -c
             - |
-              npm run build && npx knex migrate:latest && node index.js
+              npx knex migrate:latest && node index.js
       volumes:
         - name: env-volume
           configMap:
