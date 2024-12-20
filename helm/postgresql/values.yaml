@@ -7,6 +7,12 @@ postgresql:
   password: postgres
   database: form_templates
 
-postgresql:
   volumePermissions:
     enabled: true
+
+  persistence:
+    enabled: true
+    size: 512Mi
+    accessModes:
+      - ReadWriteOnce
+    mountPath: /var/lib/postgresql/data
