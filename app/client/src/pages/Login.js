@@ -10,9 +10,6 @@ const Login = () => {
     if (isAuthenticated) {
         return <Navigate to="/forms" replace />;
     }
-    console.log("REACT_APP_SSO_URL:", process.env.REACT_APP_SSO_URL);
-    console.log("Type of URL:", typeof process.env.REACT_APP_SSO_URL);
-    console.log("Value of URL:", process.env.REACT_APP_SSO_URL);
 
     return (
         <div className="App">
