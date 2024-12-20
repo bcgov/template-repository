@@ -30,7 +30,7 @@ spec:
             - sh
             - -c
             - |
-              cp /usr/app/.env ../client/.env && npm run build && npx knex migrate:latest && node index.js
+              npm run build && npx knex migrate:latest && node index.js
       volumes:
         - name: env-volume
           configMap:
