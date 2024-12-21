@@ -13,6 +13,4 @@ postgresql:
   persistence:
     enabled: true
     size: 512Mi
-    accessModes:
-      - ReadWriteOnce
-    mountPath: /var/lib/postgresql/data
+    storageClass: "standard"
