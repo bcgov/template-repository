@@ -65,10 +65,17 @@ jobs:
           openshift_token: ${{ secrets.OPENSHIFT_DEV_TOKEN }}
           insecure_skip_tls_verify: true
 
+      - name: Retrieve PostgreSQL Password
+        id: get-postgres-password
+        run: |
+          export POSTGRES_PASSWORD=$(kubectl get secret --namespace "$NAMESPACE" template-repository-postgresql -o jsonpath="{.data.postgres-password}" | base64 -d)
+          echo "POSTGRES_PASSWORD=$POSTGRES_PASSWORD" >> $GITHUB_ENV
+        
       - name: Deploy with Helm
         run: |
           helm upgrade --install template-repository ./helm/app \
           --namespace ${{ secrets.OPENSHIFT_DEV_NAMESPACE }} \
+          --set global.postgresql.auth.postgresPassword=$POSTGRES_PASSWORD \
           --set app.image.repository=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }} \
           --set app.image.tag=${{ needs.build_and_push.outputs.image_tag }} \
           --set postgresql.image.repository=postgres \
