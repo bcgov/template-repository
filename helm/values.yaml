@@ -1,0 +1,41 @@
+replicaCount: 1
+
+image:
+  repository: postgres
+  tag: "13"
+  pullPolicy: IfNotPresent
+
+configMapName: template-repo-config
+secretName: template-repo-app-secrets
+
+env:
+  APP_PORT: 3000
+  REACT_APP_ENV: dev
+
+app:
+  repository: ghcr.io/bcgov/template-repository
+  tag: dev
+
+resources:
+  requests:
+    memory: "256Mi"
+    cpu: "100m"
+  limits:
+    memory: "512Mi"
+    cpu: "250m"
+
+postgresql:
+  enabled: true
+  username: postgres
+  password: postgres
+  database: form_templates
+  primary:
+    persistence:
+      enabled: true
+      size: 512Mi
+      accessModes:
+        - ReadWriteOnce
+service:
+  type: ClusterIP
+  postgresPort: 5432
+  appPort: 3000

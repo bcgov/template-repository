@@ -2,8 +2,10 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ .Release.Name }}-app
+  labels:
+    app: {{ .Release.Name }}-app
 spec:
-  replicas: 1
+  replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
       app: {{ .Release.Name }}-app
@@ -14,7 +16,7 @@ spec:
     spec:
       containers:
         - name: app
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          image: "{{ .Values.app.repository }}:{{ .Values.app.tag }}"
           ports:
             - containerPort: {{ .Values.env.APP_PORT }}
           envFrom:
@@ -22,16 +24,10 @@ spec:
                 name: {{ .Values.configMapName }}
             - secretRef:
                 name: {{ .Values.secretName }}
-          volumeMounts:
-            - name: env-volume
-              mountPath: /usr/app/client/.env
-              subPath: .env
-          command:
-            - sh
-            - -c
-            - |
-              npx knex migrate:latest && node index.js
-      volumes:
-        - name: env-volume
-          configMap:
-            name: {{ .Values.configMapName }}
+          resources:
+            requests:
+              memory: {{ .Values.resources.requests.memory }}
+              cpu: {{ .Values.resources.requests.cpu }}
+            limits:
+              memory: {{ .Values.resources.limits.memory }}
+              cpu: {{ .Values.resources.limits.cpu }}
