@@ -1,16 +1,24 @@
-image:
-  repository: postgres
-  tag: 13
+persistence:
+  enabled: true
+  size: 1Gi
+
+resources:
+  requests:
+    storage: 1Gi
 
 postgresql:
-  username: postgres
-  password: postgres
-  database: form_templates
-
-  volumePermissions:
-    enabled: true
-
   persistence:
     enabled: true
-    size: 512Mi
-    storageClass: "standard"
+    size: 1Gi 
+  resources:
+    requests:
+      storage: 1Gi 
+
+volumeClaimTemplates:
+- metadata:
+    name: data
+  spec:
+    accessModes: ["ReadWriteOnce"]
+    resources:
+      requests:
+        storage: 1Gi
