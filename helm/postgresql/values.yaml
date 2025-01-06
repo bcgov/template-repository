@@ -9,16 +9,7 @@ resources:
 postgresql:
   persistence:
     enabled: true
-    size: 1Gi 
+    size: 1Gi
   resources:
     requests:
-      storage: 1Gi 
-
-volumeClaimTemplates:
-- metadata:
-    name: data
-  spec:
-    accessModes: ["ReadWriteOnce"]
-    resources:
-      requests:
-        storage: 1Gi
+      storage: 1Gi
