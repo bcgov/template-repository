@@ -68,7 +68,7 @@ jobs:
       - name: Retrieve PostgreSQL Password
         id: get-postgres-password
         run: |
-          export POSTGRES_PASSWORD=$(kubectl get secret --namespace "$NAMESPACE" template-repo-app-secrets -o jsonpath="{.data.postgres-password}" | base64 -d)
+          export POSTGRES_PASSWORD=$(kubectl get secret --namespace "${{ secrets.OPENSHIFT_DEV_NAMESPACE }}" template-repo-app-secrets -o jsonpath="{.data.POSTGRES_PASSWORD}" | base64 -d)
           echo "POSTGRES_PASSWORD=$POSTGRES_PASSWORD" >> $GITHUB_ENV
         
       - name: Deploy with Helm
