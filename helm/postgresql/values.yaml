@@ -13,10 +13,17 @@ resources:
     memory: "512Mi"
     cpu: "500m"
 
+service:
+  type: ClusterIP
+  port: 5432
+
 persistence:
   enabled: true
-  size: 1Gi
   accessModes:
     - ReadWriteOnce
-  storageClass: ""
+  size: 512Mi  # Ensure this matches your cluster's quota
 
+postgresql:
+  username: postgres
+  password: postgres
+  database: form_templates
