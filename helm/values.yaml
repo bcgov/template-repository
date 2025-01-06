@@ -32,7 +32,7 @@ postgresql:
   primary:
     persistence:
       enabled: true
-      size: 1Gi
+      size: 512Mi
       accessModes:
         - ReadWriteOnce
 
