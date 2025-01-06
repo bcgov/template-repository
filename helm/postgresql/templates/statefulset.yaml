@@ -7,7 +7,7 @@ metadata:
     app.kubernetes.io/instance: {{ .Release.Name }}
 spec:
   serviceName: {{ .Release.Name }}-postgresql-hl
-  replicas: 1
+  replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
       app.kubernetes.io/name: postgresql
@@ -20,20 +20,27 @@ spec:
     spec:
       containers:
         - name: postgresql
-          image: postgres:13
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - containerPort: 5432
-          resources:
-            requests:
-              storage: {{ .Values.postgresql.resources.requests.storage }}
+              name: postgresql
+          env:
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-postgresql
+                  key: postgres-password
           volumeMounts:
             - name: data
-              mountPath: /bitnami/postgresql
+              mountPath: /var/lib/postgresql/data
+      securityContext:
+        fsGroup: 1001
   volumeClaimTemplates:
     - metadata:
         name: data
       spec:
-        accessModes: ["ReadWriteOnce"]
+        accessModes: {{ .Values.persistence.accessModes }}
         resources:
           requests:
-            storage: {{ .Values.postgresql.persistence.size }}
+            storage: {{ .Values.persistence.size }}

@@ -1,15 +1,25 @@
-persistence:
-  enabled: true
-  size: 1Gi
+replicaCount: 1
+
+image:
+  repository: postgres
+  tag: "13"
+  pullPolicy: IfNotPresent
 
 resources:
   requests:
-    storage: 1Gi
+    memory: "256Mi"
+    cpu: "250m"
+  limits:
+    memory: "512Mi"
+    cpu: "500m"
 
-postgresql:
-  persistence:
-    enabled: true
-    size: 1Gi
-  resources:
-    requests:
-      storage: 1Gi
+persistence:
+  enabled: true
+  size: 1Gi
+  accessModes:
+    - ReadWriteOnce
+
+service:
+  type: ClusterIP
+  port: 5432
+  headless: true
