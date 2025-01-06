@@ -27,13 +27,13 @@ cd template-respository
 
 ## Configuration
 
-Copy and rename `.env.example` file to `.env` both in the root and in /app/client:
+Copy and rename `.env.example` file to `.env` both in the root:
 
 ```
 Copy-Item .env.example .env
 ```
 
-Update variables in `.env` files with your credentials and congifurations.
+Update variables in `.env` file with your credentials and congifurations.
 
 ## Docker Deployment
 

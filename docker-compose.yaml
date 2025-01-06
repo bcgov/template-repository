@@ -9,8 +9,6 @@ services:
       - db
     volumes:
       - .:/usr/src/app
-    environment:
-      - NODE_ENV=production
     restart: always
     command: >
       sh -c "npx knex migrate:latest && node index.js"
@@ -24,7 +22,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
     ports:
-      - "5434:5432"
+      - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
 
