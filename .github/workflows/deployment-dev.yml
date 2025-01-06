@@ -75,7 +75,7 @@ jobs:
         env:
           POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
         run: |
-          helm upgrade --install template-repository ./helm/app \
+          helm upgrade --install template-repository ./helm \
           --namespace ${{ secrets.OPENSHIFT_DEV_NAMESPACE }} \
           --set global.postgresql.auth.postgresPassword=$POSTGRES_PASSWORD \
           --set app.image.repository=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }} \
