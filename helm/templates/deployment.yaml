@@ -1,52 +1,29 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Release.Name }}
+  name: {{ .Release.Name }}-app
   labels:
-    app: {{ .Release.Name }}
+    app: {{ .Release.Name }}-app
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      app: {{ .Release.Name }}
+      app: {{ .Release.Name }}-app
   template:
     metadata:
       labels:
-        app: {{ .Release.Name }}
+        app: {{ .Release.Name }}-app
     spec:
       containers:
-        - name: postgresql
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
-          env:
-            - name: POSTGRES_USER
-              value: {{ .Values.postgresql.username }}
-            - name: POSTGRES_PASSWORD
-              value: {{ .Values.postgresql.password }}
-            - name: POSTGRES_DB
-              value: {{ .Values.postgresql.database }}
-          ports:
-            - containerPort: {{ .Values.service.postgresPort }}
-          volumeMounts:
-            - name: postgresql-data
-              mountPath: /var/lib/postgresql/data
-          resources:
-            requests:
-              memory: {{ .Values.resources.requests.memory }}
-              cpu: {{ .Values.resources.requests.cpu }}
-            limits:
-              memory: {{ .Values.resources.limits.memory }}
-              cpu: {{ .Values.resources.limits.cpu }}
-        - name: application
+        - name: app
           image: "{{ .Values.app.repository }}:{{ .Values.app.tag }}"
           ports:
-            - containerPort: {{ .Values.service.appPort }}
-          env:
-            - name: POSTGRES_USER
-              value: {{ .Values.postgresql.username }}
-            - name: POSTGRES_PASSWORD
-              value: {{ .Values.postgresql.password }}
-            - name: POSTGRES_DB
-              value: {{ .Values.postgresql.database }}
+            - containerPort: {{ .Values.env.APP_PORT }}
+          envFrom:
+            - configMapRef:
+                name: {{ .Values.configMapName }}
+            - secretRef:
+                name: {{ .Values.secretName }}
           resources:
             requests:
               memory: {{ .Values.resources.requests.memory }}
@@ -54,7 +31,3 @@ spec:
             limits:
               memory: {{ .Values.resources.limits.memory }}
               cpu: {{ .Values.resources.limits.cpu }}
-      volumes:
-        - name: postgresql-data
-          persistentVolumeClaim:
-            claimName: {{ .Release.Name }}-pvc
