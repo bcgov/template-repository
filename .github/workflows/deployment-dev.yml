@@ -72,6 +72,8 @@ jobs:
           echo "POSTGRES_PASSWORD=$POSTGRES_PASSWORD" >> $GITHUB_ENV
         
       - name: Deploy with Helm
+        env:
+          POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
         run: |
           helm upgrade --install template-repository ./helm/app \
           --namespace ${{ secrets.OPENSHIFT_DEV_NAMESPACE }} \
