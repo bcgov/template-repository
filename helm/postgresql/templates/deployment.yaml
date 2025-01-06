@@ -5,7 +5,7 @@ metadata:
   labels:
     app: {{ .Release.Name }}-postgresql
 spec:
-  replicas: 1
+  replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
       app: {{ .Release.Name }}-postgresql
@@ -19,18 +19,22 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           env:
             - name: POSTGRES_USER
-              value: "{{ .Values.postgresql.username }}"
+              value: {{ .Values.postgresql.username }}
             - name: POSTGRES_PASSWORD
-              value: "{{ .Values.postgresql.password }}"
+              value: {{ .Values.postgresql.password }}
             - name: POSTGRES_DB
-              value: "{{ .Values.postgresql.database }}"
-          ports:
-            - containerPort: 5432
-              name: postgresql
+              value: {{ .Values.postgresql.database }}
           volumeMounts:
             - name: postgresql-data
               mountPath: /var/lib/postgresql/data
+          resources:
+            requests:
+              memory: {{ .Values.resources.requests.memory }}
+              cpu: {{ .Values.resources.requests.cpu }}
+            limits:
+              memory: {{ .Values.resources.limits.memory }}
+              cpu: {{ .Values.resources.limits.cpu }}
       volumes:
         - name: postgresql-data
           persistentVolumeClaim:
-            claimName: {{ .Release.Name }}-postgresql-pvc
+            claimName: {{ .Release.Name }}-postgresql
