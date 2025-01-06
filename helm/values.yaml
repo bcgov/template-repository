@@ -12,6 +12,10 @@ env:
   APP_PORT: 3000
   REACT_APP_ENV: dev
 
+app:
+  repository: ghcr.io/bcgov/template-repository
+  tag: dev
+
 resources:
   requests:
     memory: "256Mi"
@@ -21,14 +25,7 @@ resources:
     cpu: "250m"
 
 postgresql:
-  username: postgres
-  password: postgres
-  database: form_templates
-  primary:
-    persistence:
-      size: 512Mi
-      accessModes:
-        - ReadWriteOnce
+  enabled: false  
 
 service:
   type: ClusterIP
