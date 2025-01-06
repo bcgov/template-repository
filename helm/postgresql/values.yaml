@@ -19,7 +19,3 @@ persistence:
   accessModes:
     - ReadWriteOnce
 
-service:
-  type: ClusterIP
-  port: 5432
-  headless: true
