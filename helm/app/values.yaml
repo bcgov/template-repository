@@ -8,3 +8,11 @@ image:
 env:
   APP_PORT: 3000
   REACT_APP_ENV: dev
+
+postgresql:
+  persistence:
+    enabled: true
+    size: 1Gi 
+  resources:
+    requests:
+      storage: 1Gi
