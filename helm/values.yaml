@@ -25,8 +25,16 @@ resources:
     cpu: "250m"
 
 postgresql:
-  enabled: false  
-
+  enabled: true
+  username: postgres
+  password: postgres
+  database: form_templates
+  primary:
+    persistence:
+      enabled: true
+      size: 512Mi
+      accessModes:
+        - ReadWriteOnce
 service:
   type: ClusterIP
   postgresPort: 5432
