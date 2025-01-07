@@ -1,10 +1,5 @@
 replicaCount: 1
 
-image:
-  repository: postgres
-  tag: "13"
-  pullPolicy: IfNotPresent
-
 configMapName: template-repo-config
 secretName: template-repo-app-secrets
 
@@ -25,23 +20,23 @@ resources:
     cpu: "250m"
 
 postgresql:
-  enabled: true
-  image:
-    repository: postgres
-    tag: "13"
-  username: postgres
-  password: postgres
-  database: form_templates
-  primary:
-    persistence:
-      enabled: true
-      size: 512Mi
-      accessModes:
-        - ReadWriteOnce
-      storageClassName: netapp-file-standard
+  enabled: false 
+  external:
+    host: template-repo-patroni  
+    port: 5432                 
+    usernameFrom:
+      secretKeyRef:
+        name: template-repo-patroni
+        key: app-db-username
+    passwordFrom:
+      secretKeyRef:
+        name: template-repo-patroni
+        key: app-db-password
+    databaseFrom:
+      secretKeyRef:
+        name: template-repo-patroni
+        key: app-db-name
 
 service:
   type: ClusterIP
-  postgresPort: 5432
   appPort: 3000
-
