@@ -1,0 +1,23 @@
+body,
+html {
+  font-family: var(--typography-font-families-bc-sans, "Arial", sans-serif);
+}
+
+.App {
+  text-align: left;
+  transition: background-color 0.3s, color 0.3s;
+  background-color: #ffffff;
+  color: #000000;
+}
+
+.bcds-header {
+  justify-content: normal !important;
+}
+
+.bcds-header--container {
+  max-width: 100% !important;
+}
+
+.bcds-react-aria-TextArea--Input {
+  height: 77vh;
+}

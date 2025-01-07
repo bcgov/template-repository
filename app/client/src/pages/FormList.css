@@ -1,0 +1,27 @@
+.App {
+  text-align: left;
+  transition: background-color 0.3s, color 0.3s;
+  background-color: #ffffff;
+  color: #000000;
+}
+
+.bcds-header {
+  justify-content: normal !important;
+}
+
+.bcds-header--container {
+  max-width: 100% !important;
+}
+
+.bcds-react-aria-TextArea--Input {
+  height: 77vh;
+}
+
+.dialog-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: stretch;
+  height: 91vh;
+  padding: 2vh;
+}

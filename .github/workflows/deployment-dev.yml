@@ -1,0 +1,79 @@
+name: Build and Deploy to DEV
+
+on:
+  push:
+    branches:
+      - dev
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build_and_push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            APP_PORT=${{ secrets.APP_PORT }}
+
+    outputs:
+      image_tag: ${{ steps.meta.outputs.tags }}
+
+  deploy_dev:
+    needs: build_and_push
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v4
+
+      - name: Install oc CLI
+        uses: redhat-actions/oc-installer@v1
+
+      - name: Authenticate with OpenShift (DEV)
+        uses: redhat-actions/oc-login@v1
+        with:
+          openshift_server_url: ${{ secrets.OPENSHIFT_SERVER }}
+          namespace: ${{ secrets.OPENSHIFT_DEV_NAMESPACE }}
+          openshift_token: ${{ secrets.OPENSHIFT_DEV_TOKEN }}
+          insecure_skip_tls_verify: true
+        
+      - name: Deploy with Helm
+        run: |
+          helm upgrade --install template-repository ./helm \
+          --namespace ${{ secrets.OPENSHIFT_DEV_NAMESPACE }} \
+          --set app.image.repository=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }} \
+          --set app.image.tag=${{ needs.build_and_push.outputs.image_tag }} \
+          --set postgresql.image.repository=postgres \
+          --set postgresql.image.tag=13
+
+      - name: Trigger OpenShift Rollout
+        run: |
+          oc rollout restart deployment/template-repository-app -n ${{ secrets.OPENSHIFT_DEV_NAMESPACE }}
