@@ -7,7 +7,7 @@ const root = ReactDOM.createRoot(document.getElementById("root"));
 
 root.render(
   <React.StrictMode>
-    <SSOProvider idpHint="idir" backendURL="http://localhost:3000">
+    <SSOProvider idpHint="idir" backendURL={process.env.REACT_APP_SSO_URL}>
       <App />
     </SSOProvider>
   </React.StrictMode>
