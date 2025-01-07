@@ -1,12 +1,5 @@
 FROM node:20
 
-# Set allowed UID/GID range and create non-root user
-ARG ALLOWED_UID=1007250000
-ARG ALLOWED_GID=1007250000
-
-RUN addgroup --gid ${ALLOWED_GID} appgroup && \
-    adduser --disabled-password --gecos "" --uid ${ALLOWED_UID} --gid ${ALLOWED_GID} appuser
-
 # Set working directory and prepare permissions
 WORKDIR /usr/app
 
@@ -31,9 +24,6 @@ RUN npm run build
 WORKDIR /usr/app/src
 RUN chgrp -R 0 /usr/app && \
     chmod -R g=u /usr/app
-
-# Switch to the non-root user
-USER appuser
 
 ARG APP_PORT
 ENV APP_PORT=${APP_PORT}
