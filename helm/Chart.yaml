@@ -1,6 +1,6 @@
 apiVersion: v2
 name: template-repository
-description: Unified Helm chart for Template Repository and PostgreSQL
+description: Unified Helm chart for Template Repository 
 type: application
 version: 0.1.0
 appVersion: "1.0"
