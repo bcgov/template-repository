@@ -14,7 +14,7 @@ module.exports = {
     },
     pool: {
         min: 2,
-        max: 10,
+        max: 50,
         acquireTimeoutMillis: 60000,
         afterCreate: (conn, done) => {
             console.log(`[Knex] Connection created:`, conn);

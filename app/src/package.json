@@ -9,7 +9,6 @@
     "pg": "^8.13.0"
   },
   "scripts": {
-    "migrate": "node ./app/src/migrate.js",
     "start": "node ./app/src/index.js",
     "dev": "nodemon ./app/src/index.js"
   },
