@@ -7,7 +7,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
+  IMAGE_NAME: ${{ github.repository_owner }}/${{ github.event.repository.name }}
 
 jobs:
   build_and_push:
@@ -38,10 +38,10 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+            ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          build-args: |
-            APP_PORT=${{ secrets.APP_PORT }}
 
     outputs:
       image_tag: ${{ steps.meta.outputs.tags }}
@@ -64,15 +64,10 @@ jobs:
           namespace: ${{ secrets.OPENSHIFT_DEV_NAMESPACE }}
           openshift_token: ${{ secrets.OPENSHIFT_DEV_TOKEN }}
           insecure_skip_tls_verify: true
-        
+
       - name: Deploy with Helm
         run: |
-          helm upgrade --install template-repository ./helm \
-          --namespace ${{ secrets.OPENSHIFT_DEV_NAMESPACE }} \
-          --set app.image.repository=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }} \
-          --set app.image.tag=${{ needs.build_and_push.outputs.image_tag }} \
-          --set postgresql.image.repository=postgres \
-          --set postgresql.image.tag=12
+          helm upgrade --install template-repository ./helm/app --namespace ${{ secrets.OPENSHIFT_DEV_NAMESPACE }} --set image.tag=${{ needs.build_and_push.outputs.image_tag }}
 
       - name: Trigger OpenShift Rollout
         run: |
