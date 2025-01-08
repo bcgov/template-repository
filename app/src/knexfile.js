@@ -16,6 +16,7 @@ module.exports = {
             max: 10,
             acquireTimeoutMillis: 60000,
         },
+        acquireConnectionTimeout: 60000,
     },
     migrations: {
         directory: path.join(__dirname, "migrations"),

@@ -15,7 +15,7 @@ services:
 
   db:
     image: postgres:12
-    hostname: ${POSTGRES_DB}
+    hostname: ${POSTGRES_HOST}
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
