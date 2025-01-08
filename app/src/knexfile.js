@@ -13,9 +13,14 @@ module.exports = {
         port: process.env.POSTGRES_PORT,
     },
     pool: {
-        min: 2,
+        min: 0,
         max: 50,
-        acquireTimeoutMillis: 60000,
+        createTimeoutMillis: 3000,
+        acquireTimeoutMillis: 30000,
+        idleTimeoutMillis: 30000,
+        reapIntervalMillis: 1000,
+        createRetryIntervalMillis: 100,
+        propagateCreateError: false,
         afterCreate: (conn, done) => {
             console.log(`[Knex] Connection created:`, conn);
             done(null, conn);
@@ -28,11 +33,11 @@ module.exports = {
     migrations: {
         directory: path.join(__dirname, "migrations"),
         pool: {
-            min: 1,
+            min: 0,
             max: 2,
         },
     },
-    debug: true, // Enable SQL query debugging
+    debug: true,
     log: {
         warn(message) {
             console.warn(`[Knex][WARN] ${message}`);
