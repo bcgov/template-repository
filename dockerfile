@@ -29,5 +29,4 @@ ARG APP_PORT
 ENV APP_PORT=${APP_PORT}
 EXPOSE ${APP_PORT}
 
-# Entry point
-CMD ["sh", "-c", "npx knex migrate:latest && node index.js"]
+CMD ["node", "index.js"]
