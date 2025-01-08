@@ -72,7 +72,7 @@ jobs:
           --set app.image.repository=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }} \
           --set app.image.tag=${{ needs.build_and_push.outputs.image_tag }} \
           --set postgresql.image.repository=postgres \
-          --set postgresql.image.tag=13
+          --set postgresql.image.tag=12
 
       - name: Trigger OpenShift Rollout
         run: |

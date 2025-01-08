@@ -16,6 +16,7 @@ spec:
     spec:
       containers:
         - name: app
+          command: [ "sleep", "3600" ]
           image: "{{ .Values.app.repository }}:{{ .Values.app.tag }}"
           ports:
             - containerPort: {{ .Values.env.APP_PORT }}
