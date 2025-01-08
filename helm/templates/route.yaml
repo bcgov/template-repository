@@ -9,6 +9,6 @@ spec:
     kind: Service
     name: {{ .Release.Name }}-app
   port:
-    targetPort: app
+    targetPort: 3000
   tls:
     termination: edge

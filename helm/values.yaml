@@ -6,6 +6,20 @@ secretName: template-repo-app-secrets
 env:
   APP_PORT: 3000
   REACT_APP_ENV: dev
+  POSTGRES_HOST: template-repo-patroni
+  POSTGRES_PORT: 5432
+  POSTGRES_USER:
+    secretKeyRef:
+      name: template-repo-patroni
+      key: app-db-username
+  POSTGRES_PASSWORD:
+    secretKeyRef:
+      name: template-repo-patroni
+      key: app-db-password
+  POSTGRES_DB:
+    secretKeyRef:
+      name: template-repo-patroni
+      key: app-db-name
 
 app:
   repository: ghcr.io/bcgov/template-repository
@@ -20,10 +34,10 @@ resources:
     cpu: "250m"
 
 postgresql:
-  enabled: false 
+  enabled: false
   external:
-    host: template-repo-patroni  
-    port: 5432                 
+    host: template-repo-patroni
+    port: 5432
     usernameFrom:
       secretKeyRef:
         name: template-repo-patroni
