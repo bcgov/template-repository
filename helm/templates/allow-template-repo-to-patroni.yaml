@@ -1,0 +1,19 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-template-repo-to-patroni
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/instance: template-repo-patroni
+      app.kubernetes.io/name: patroni
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/name: template-repo-app
+    ports:
+    - protocol: TCP
+      port: 5432
