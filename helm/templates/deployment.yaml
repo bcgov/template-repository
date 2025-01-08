@@ -18,7 +18,7 @@ spec:
         - name: app
           image: "{{ .Values.app.repository }}:{{ .Values.app.tag }}"
           ports:
-            - containerPort: {{ .Values.env.APP_PORT }}
+            - containerPort: 3000
           envFrom:
             - configMapRef:
                 name: {{ .Values.configMapName }}
