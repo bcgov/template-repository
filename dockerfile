@@ -3,7 +3,6 @@ FROM node:20
 # Set working directory and prepare permissions
 WORKDIR /usr/app
 
-# Copy files and adjust permissions for OpenShift
 COPY ./app/src/package*.json ./src/
 RUN npm install --prefix ./src
 
@@ -17,6 +16,10 @@ COPY ./app/client/package-lock.json ./package-lock.json
 RUN npm install
 
 COPY ./app/client/ .
+
+# Inject REACT_APP_SSO_URL into the React app during the build
+ARG REACT_APP_SSO_URL
+ENV REACT_APP_SSO_URL=${REACT_APP_SSO_URL}
 
 RUN npm run build
 

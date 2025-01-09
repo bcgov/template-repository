@@ -8,18 +8,22 @@ env:
   REACT_APP_ENV: dev
   POSTGRES_HOST: template-repo-patroni
   POSTGRES_PORT: 5432
-  POSTGRES_USER:
-    secretKeyRef:
-      name: template-repo-patroni
-      key: app-db-username
-  POSTGRES_PASSWORD:
-    secretKeyRef:
-      name: template-repo-patroni
-      key: app-db-password
-  POSTGRES_DB:
-    secretKeyRef:
-      name: template-repo-patroni
-      key: app-db-name
+
+secrets:
+  POSTGRES_USER_SECRET:
+    name: template-repo-patroni
+    key: app-db-username
+  POSTGRES_PASSWORD_SECRET:
+    name: template-repo-patroni
+    key: app-db-password
+  POSTGRES_DB_SECRET:
+    name: template-repo-patroni
+    key: app-db-name
+
+config:
+  REACT_APP_API_URL:
+    name: template-repo-config
+    key: REACT_APP_API_URL
 
 app:
   repository: ghcr.io/bcgov/template-repository
