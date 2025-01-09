@@ -41,7 +41,7 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../client/build', 'index.html'));
 });
 
-app.listen(port, () => {
-  console.log(`Server running on http://localhost:${port}`);
+const host = process.env.HOST || 'localhost';
+app.listen(port, host, () => {
+  console.log(`Server running on http://${host}:${port}`);
 });
-

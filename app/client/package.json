@@ -2,7 +2,6 @@
   "name": "client",
   "version": "0.1.0",
   "private": true,
-  "proxy": "http://localhost:3000",
   "dependencies": {
     "@bcgov/citz-imb-sso-react": "^1.0.1",
     "@bcgov/design-system-react-components": "^0.4.0",
