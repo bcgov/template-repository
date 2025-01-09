@@ -225,20 +225,43 @@ const FormList = () => {
             id: "preview",
             Cell: ({ row }) => {
                 const handlePreviewClick = () => {
+                    console.log("handlePreviewClick triggered");
+
                     const jsonString = JSON.stringify(row.original, null, 2);
+                    console.log("Serialized row data:", jsonString);
+
                     const previewURL = process.env.REACT_APP_KILN_PREVIEW_URL;
                     const targetOrigin = process.env.REACT_APP_KILN_URL;
+
+                    console.log("Preview URL:", previewURL);
+                    console.log("Target Origin:", targetOrigin);
 
                     const newTab = window.open(previewURL, "_blank");
 
                     if (newTab) {
+                        console.log("New tab successfully opened:", newTab);
+
                         const sendMessage = () => {
-                            newTab.postMessage({ type: "LOAD_JSON", data: jsonString }, targetOrigin);
+                            console.log("Sending message to new tab:", {
+                                type: "LOAD_JSON",
+                                data: jsonString,
+                            });
+                            try {
+                                newTab.postMessage({ type: "LOAD_JSON", data: jsonString }, targetOrigin);
+                            } catch (error) {
+                                console.error("Error sending message to new tab:", error);
+                            }
                         };
 
-                        newTab.onload = sendMessage;
+                        // Attempt to send the message after the tab loads
+                        newTab.onload = () => {
+                            console.log("New tab loaded, sending message");
+                            sendMessage();
+                        };
 
+                        // Fallback timeout to ensure message is sent even if onload doesn't fire
                         setTimeout(() => {
+                            console.log("Fallback timeout triggered, sending message");
                             sendMessage();
                         }, 1000);
                     } else {
