@@ -41,7 +41,7 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../client/build', 'index.html'));
 });
 
-const host = process.env.HOST || 'localhost';
+const host = process.env.HOST;
 app.listen(port, host, () => {
   console.log(`Server running on http://${host}:${port}`);
 });
