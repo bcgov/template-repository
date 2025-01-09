@@ -58,3 +58,6 @@ postgresql:
 service:
   type: ClusterIP
   appPort: 3000
+
+image:
+  pullPolicy: Always  
