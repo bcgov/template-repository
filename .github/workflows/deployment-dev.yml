@@ -44,6 +44,9 @@ jobs:
           build-args: |
             APP_PORT=${{ secrets.APP_PORT }}
             REACT_APP_SSO_URL=${{ secrets.REACT_APP_SSO_URL }}
+            REACT_APP_KILN_PREVIEW_URL=${{ secrets.REACT_APP_KILN_PREVIEW_URL }}
+            REACT_APP_KILN_URL=${{ secrets.REACT_APP_KILN_URL }}
+            REACT_APP_ENV=${{ secrets.REACT_APP_ENV }}
             
     outputs:
       image_tag: ${{ steps.meta.outputs.tags }}
