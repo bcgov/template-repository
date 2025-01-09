@@ -19,10 +19,22 @@ RUN npm install
 
 COPY ./app/client/ .
 
-# Inject REACT_APP_SSO_URL into the React app during the build
+# Inject environment variables into the React app during the build
 ARG REACT_APP_SSO_URL
+ARG REACT_APP_KILN_PREVIEW_URL
+ARG REACT_APP_KILN_URL
+ARG REACT_APP_ENV
 ENV REACT_APP_SSO_URL=${REACT_APP_SSO_URL}
-RUN echo "REACT_APP_SSO_URL=${REACT_APP_SSO_URL}" > .env
+ENV REACT_APP_KILN_PREVIEW_URL=${REACT_APP_KILN_PREVIEW_URL}
+ENV REACT_APP_KILN_URL=${REACT_APP_KILN_URL}
+ENV REACT_APP_ENV=${REACT_APP_ENV}
+
+# Create a .env file for React to read environment variables during the build
+RUN echo "REACT_APP_SSO_URL=${REACT_APP_SSO_URL}" >> .env && \
+    echo "REACT_APP_KILN_PREVIEW_URL=${REACT_APP_KILN_PREVIEW_URL}" >> .env && \
+    echo "REACT_APP_KILN_URL=${REACT_APP_KILN_URL}" >> .env && \
+    echo "REACT_APP_ENV=${REACT_APP_ENV}" >> .env
+
 
 # Build the React app
 RUN npm run build
