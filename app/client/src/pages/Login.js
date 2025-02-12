@@ -18,7 +18,7 @@ const Login = () => {
                 <h3 style={{ margin: "3vh" }}>Please log in to access this application</h3>
                 <Button onPress={() => {
                     console.log("Backend URL passed to login:", process.env.REACT_APP_SSO_URL);
-                    login({ backendURL: "https://template-repository-app-d70240-dev.apps.silver.devops.gov.bc.ca" })
+                    login({ backendURL: process.env.REACT_APP_SSO_URL })
                 }}>Log In</Button>
             </div>
         </div>

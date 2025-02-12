@@ -21,11 +21,6 @@ sso(app, {
   },
 });
 
-//Health check
-app.get('/health', (req, res) => {
-  res.status(200).send('OK');
-});
-
 app.use(express.json());
 
 app.use('/api', protectedRoute(), formRoutes);
@@ -41,7 +36,6 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../client/build', 'index.html'));
 });
 
-const host = process.env.HOST;
-app.listen(port, host, () => {
-  console.log(`Server running on http://${host}:${port}`);
+app.listen(port, () => {
+  console.log(`Server running on http://localhost:${port}`);
 });

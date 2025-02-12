@@ -37,15 +37,16 @@ Update variables in `.env` file with your credentials and congifurations.
 
 ## Docker Deployment
 
-Have Docker installed and running. Run the following commands:
+Have Docker installed and running. Run the following commands for local deployment:
+(Windows)
+```
+$env:DOCKERFILE="dockerfile-local"; docker-compose up --build
+```
+(Mac/Linux)
+```
+DOCKERFILE=dockerfile-local docker-compose up --build
+```
 
-```
-docker-compose build
-```
-
-```
-docker-compose up
-```
 Server should be listening on `localhost:3000`
 
 ## User Interface

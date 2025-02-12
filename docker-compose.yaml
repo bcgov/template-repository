@@ -2,6 +2,7 @@ services:
   app:
     build:
       context: .
+      dockerfile: ${DOCKERFILE:-Dockerfile}
     ports:
       - "${APP_PORT}:${APP_PORT}"
     env_file:

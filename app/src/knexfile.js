@@ -21,13 +21,13 @@ module.exports = {
         reapIntervalMillis: 1000,
         createRetryIntervalMillis: 100,
         propagateCreateError: false,
-        afterCreate: (conn, done) => {
-            console.log(`[Knex] Connection created:`, conn);
-            done(null, conn);
-        },
-        destroy: (conn) => {
-            console.log(`[Knex] Connection destroyed:`, conn);
-        },
+        // afterCreate: (conn, done) => {
+        // console.log(`[Knex] Connection created:`, conn);
+        //     done(null, conn);
+        // },
+        // destroy: (conn) => {
+        //     console.log(`[Knex] Connection destroyed:`, conn);
+        // },
     },
     acquireConnectionTimeout: 60000,
     migrations: {
@@ -36,34 +36,7 @@ module.exports = {
             min: 0,
             max: 2,
         },
-    },
-    debug: true,
-    log: {
-        warn(message) {
-            console.warn(`[Knex][WARN] ${message}`);
-        },
-        error(message) {
-            console.error(`[Knex][ERROR] ${message}`);
-        },
-        deprecate(message) {
-            console.warn(`[Knex][DEPRECATE] ${message}`);
-        },
-        debug(message) {
-            console.debug(`[Knex][DEBUG] ${message}`);
-        },
-    },
+    }
 };
 
 const knex = require('knex')(module.exports);
-
-knex.on('query', (query) => {
-    console.log('[Knex][QUERY] Executing:', query.sql);
-});
-
-knex.on('query-error', (error, obj) => {
-    console.error('[Knex][QUERY-ERROR]', error.message, obj);
-});
-
-knex.on('query-response', (response, query) => {
-    console.log('[Knex][QUERY-RESPONSE] Response:', response);
-});
