@@ -14,8 +14,6 @@ env:
 jobs:
   build_and_push:
     runs-on: ubuntu-latest
-    outputs:
-      image_tag: ${{ steps.meta.outputs.tags }}
 
     steps:
       - name: Checkout the repository
@@ -75,6 +73,9 @@ jobs:
             REACT_APP_KILN_PREVIEW_URL=${{ env.REACT_APP_KILN_PREVIEW_URL }}
             REACT_APP_KILN_URL=${{ env.REACT_APP_KILN_URL }}
             REACT_APP_ENV=${{ env.REACT_APP_ENV }}
+    
+    outputs:
+      image_tag: ${{ steps.meta.outputs.version }}
 
   deploy_dev:
     needs: build_and_push
