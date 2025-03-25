@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     
     outputs:
-      image_tag: ${{ steps.meta.outputs.tags }}
+      image_tag: ${{ steps.branch_tag.outputs.image_tag }}
     
     steps:
       - name: Checkout the repository
@@ -39,6 +39,10 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
             type=ref,event=branch,pattern=*
+      
+      - name: Set branch tag output with prefix
+        id: branch_tag
+        run: echo "image_tag=branch-${GITHUB_REF##*/}" >> $GITHUB_OUTPUT
       
       - name: Export secrets based on environment
         run: |
@@ -70,7 +74,7 @@ jobs:
           context: .
           push: true
           no-cache: true
-          tags: ${{ steps.meta.outputs.tags }}
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.branch_tag.outputs.image_tag }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             APP_PORT=${{ env.APP_PORT }}
