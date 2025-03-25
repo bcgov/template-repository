@@ -34,15 +34,13 @@ jobs:
       - name: Export image tag for downstream jobs
         id: export
         run: |
-          BRANCH=${{ github.ref_name }}
-          if [[ "$BRANCH" == "main" ]]; then
+          if [[ "${GITHUB_REF##*/}" == "main" ]]; then
             echo "image_tag=main" >> $GITHUB_OUTPUT
-          elif [[ "$BRANCH" == "test" ]]; then
+          elif [[ "${GITHUB_REF##*/}" == "test" ]]; then
             echo "image_tag=test" >> $GITHUB_OUTPUT
           else
             echo "image_tag=dev" >> $GITHUB_OUTPUT
           fi
-
       - name: Export secrets based on environment
         run: |
           if [[ "${GITHUB_REF##*/}" == "main" ]]; then
