@@ -33,10 +33,10 @@ jobs:
       
       - name: Set image tag based on branch name
         run: echo "IMAGE_TAG=${{ github.ref_name }}" >> $GITHUB_ENV
-      
+
       - name: Export image tag for downstream jobs
         id: export
-        run: echo "image_tag=${GITHUB_REF_NAME}" >> $GITHUB_OUTPUT
+        run: echo "image_tag=${{ github.ref_name }}" >> $GITHUB_OUTPUT
 
       - name: Export secrets based on environment
         run: |
