@@ -107,4 +107,4 @@ jobs:
 
       - name: Trigger OpenShift Rollout
         run: |
-          oc rollout restart deployment/template-repository-app -n ${{ secrets.OPENSHIFT_DEV_NAMESPACE }}
+          oc rollout restart deployment/template-repository-app -n ${{ github.ref == 'refs/heads/main' && secrets.OPENSHIFT_PROD_TOKEN || (github.ref == 'refs/heads/dev' && secrets.OPENSHIFT_DEV_TOKEN) || secrets.OPENSHIFT_TEST_TOKEN }}
