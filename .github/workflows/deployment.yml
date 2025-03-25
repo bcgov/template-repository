@@ -31,9 +31,9 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       
-       - name: Export image tag for downstream jobs
-         id: export
-         run: |
+      - name: Export image tag for downstream jobs
+        id: export
+        run: |
           BRANCH=${{ github.ref_name }}
           if [[ "$BRANCH" == "main" ]]; then
             echo "image_tag=main" >> $GITHUB_OUTPUT
