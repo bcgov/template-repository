@@ -28,6 +28,9 @@ jobs:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Set image tag based on branch name
+        run: echo "IMAGE_TAG=${{ github.ref_name }}" >> $GITHUB_ENV
 
       - name: Extract metadata for Docker
         id: meta
@@ -65,7 +68,7 @@ jobs:
           context: .
           push: true
           no-cache: true
-          tags: ${{ steps.meta.outputs.tags }}
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             APP_PORT=${{ env.APP_PORT }}
