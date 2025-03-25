@@ -58,7 +58,7 @@ jobs:
             echo "REACT_APP_SSO_URL=${{ secrets.REACT_APP_SSO_URL_TEST }}" >> $GITHUB_ENV
             echo "REACT_APP_KILN_PREVIEW_URL=${{ secrets.REACT_APP_KILN_PREVIEW_URL_TEST }}" >> $GITHUB_ENV
             echo "REACT_APP_KILN_URL=${{ secrets.REACT_APP_KILN_URL_TEST }}" >> $GITHUB_ENV
-            echo "REACT_APP_ENV=${{ secrets.REACT_APP_ENV_TEST }}" >> $GITHUB_ENV
+            echo "REACT_APP_ENV=${{ env.REACT_APP_ENV_TEST }}" >> $GITHUB_ENV
 
           else
             echo "APP_PORT=${{ secrets.APP_PORT_DEV }}" >> $GITHUB_ENV
