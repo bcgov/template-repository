@@ -31,6 +31,10 @@ jobs:
       
       - name: Set image tag based on branch name
         run: echo "IMAGE_TAG=${{ github.ref_name }}" >> $GITHUB_ENV
+      
+      - name: Export image tag for downstream jobs
+        id: export
+        run: echo "image_tag=${{ github.ref_name }}" >> $GITHUB_OUTPUT
 
       - name: Export secrets based on environment
         run: |
@@ -72,7 +76,7 @@ jobs:
             REACT_APP_ENV=${{ env.REACT_APP_ENV }}
             
     outputs:
-      image_tag:  ${{ env.IMAGE_TAG }}
+      image_tag:  ${{ steps.export.outputs.image_tag }}
 
   deploy_dev:
     needs: build_and_push
