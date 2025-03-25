@@ -14,6 +14,8 @@ env:
 jobs:
   build_and_push:
     runs-on: ubuntu-latest
+    outputs:
+      image_tag:  ${{ steps.export.outputs.image_tag }}
 
     steps:
       - name: Checkout the repository
@@ -66,7 +68,7 @@ jobs:
           context: .
           push: true
           no-cache: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.export.outputs.image_tag }}
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             APP_PORT=${{ env.APP_PORT }}
@@ -74,9 +76,6 @@ jobs:
             REACT_APP_KILN_PREVIEW_URL=${{ env.REACT_APP_KILN_PREVIEW_URL }}
             REACT_APP_KILN_URL=${{ env.REACT_APP_KILN_URL }}
             REACT_APP_ENV=${{ env.REACT_APP_ENV }}
-            
-    outputs:
-      image_tag:  ${{ steps.export.outputs.image_tag }}
 
   deploy_dev:
     needs: build_and_push
