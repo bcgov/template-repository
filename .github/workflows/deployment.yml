@@ -36,7 +36,9 @@ jobs:
 
       - name: Export image tag for downstream jobs
         id: export
-        run: echo "image_tag=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+        run: |
+          IMAGE_TAG=${{ github.ref_name }}
+          echo "image_tag=$IMAGE_TAG" >> $GITHUB_OUTPUT
 
       - name: Export secrets based on environment
         run: |
