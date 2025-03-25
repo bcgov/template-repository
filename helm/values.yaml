@@ -1,5 +1,3 @@
-environment: dev
-
 replicaCount: 1
 
 configMapName: template-repo-config
@@ -23,7 +21,7 @@ config:
 
 app:
   repository: ghcr.io/bcgov/template-repository
-  tag: latest
+  tag: ""
 
 resources:
   requests:
