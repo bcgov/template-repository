@@ -97,9 +97,7 @@ jobs:
           insecure_skip_tls_verify: true
       
       - name: Debug image tag
-        run: echo "Resolved image tag: $IMAGE_TAG"
-        env:
-          IMAGE_TAG: ${{ needs.build_and_push.outputs.image_tag }}
+        run: echo "Resolved image tag: ${{ needs.build_and_push.outputs.image_tag }}"
 
       - name: Deploy with Helm
         run: |
