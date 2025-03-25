@@ -15,7 +15,7 @@ jobs:
   build_and_push:
     runs-on: ubuntu-latest
     outputs:
-      image_tag:  ${{ steps.export.outputs.image_tag }}
+      image_tag: ${{ steps.meta.outputs.tags }}
 
     steps:
       - name: Checkout the repository
@@ -30,17 +30,13 @@ jobs:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+        
+      - name: Extract metadata for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
       
-      - name: Export image tag for downstream jobs
-        id: export
-        run: |
-          if [[ "${GITHUB_REF##*/}" == "main" ]]; then
-            echo "image_tag=main" >> $GITHUB_OUTPUT
-          elif [[ "${GITHUB_REF##*/}" == "test" ]]; then
-            echo "image_tag=test" >> $GITHUB_OUTPUT
-          else
-            echo "image_tag=dev" >> $GITHUB_OUTPUT
-          fi
       - name: Export secrets based on environment
         run: |
           if [[ "${GITHUB_REF##*/}" == "main" ]]; then
@@ -71,7 +67,7 @@ jobs:
           context: .
           push: true
           no-cache: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.export.outputs.image_tag }}
+          tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             APP_PORT=${{ env.APP_PORT }}
