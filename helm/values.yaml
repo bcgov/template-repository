@@ -1,13 +1,9 @@
+environment: dev
+
 replicaCount: 1
 
 configMapName: template-repo-config
 secretName: template-repo-app-secrets
-
-env:
-  APP_PORT: 3000
-  REACT_APP_ENV: dev
-  POSTGRES_HOST: template-repo-patroni
-  POSTGRES_PORT: 5432
 
 secrets:
   POSTGRES_USER_SECRET:
@@ -27,7 +23,7 @@ config:
 
 app:
   repository: ghcr.io/bcgov/template-repository
-  tag: dev
+  tag: latest
 
 resources:
   requests:
