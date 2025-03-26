@@ -40,7 +40,7 @@ jobs:
           tags: |
             type=ref,event=branch,pattern=*
       
-      - name: Set branch tag output with prefix
+      - name: Set branch tag 
         id: branch_tag
         run: echo "image_tag=${GITHUB_REF##*/}" >> $GITHUB_OUTPUT
       
