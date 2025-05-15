@@ -30,7 +30,7 @@ ENV REACT_APP_KILN_URL=${REACT_APP_KILN_URL}
 # Create a .env file for React to read environment variables during the build
 RUN echo "REACT_APP_SSO_URL=${REACT_APP_SSO_URL}" >> .env && \
     echo "REACT_APP_KILN_PREVIEW_URL=${REACT_APP_KILN_PREVIEW_URL}" >> .env && \
-    echo "REACT_APP_KILN_URL=${REACT_APP_KILN_URL}" >> .env && 
+    echo "REACT_APP_KILN_URL=${REACT_APP_KILN_URL}" >> .env
 
 
 # Build the React app
