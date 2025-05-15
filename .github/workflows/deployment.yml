@@ -51,21 +51,18 @@ jobs:
             echo "REACT_APP_SSO_URL=${{ secrets.REACT_APP_SSO_URL_PROD }}" >> $GITHUB_ENV
             echo "REACT_APP_KILN_PREVIEW_URL=${{ secrets.REACT_APP_KILN_PREVIEW_URL_PROD }}" >> $GITHUB_ENV
             echo "REACT_APP_KILN_URL=${{ secrets.REACT_APP_KILN_URL_PROD }}" >> $GITHUB_ENV
-            echo "REACT_APP_ENV=${{ secrets.REACT_APP_ENV_PROD }}" >> $GITHUB_ENV
 
           elif [[ "${GITHUB_REF##*/}" == "test" ]]; then
             echo "APP_PORT=${{ secrets.APP_PORT_TEST }}" >> $GITHUB_ENV
             echo "REACT_APP_SSO_URL=${{ secrets.REACT_APP_SSO_URL_TEST }}" >> $GITHUB_ENV
             echo "REACT_APP_KILN_PREVIEW_URL=${{ secrets.REACT_APP_KILN_PREVIEW_URL_TEST }}" >> $GITHUB_ENV
             echo "REACT_APP_KILN_URL=${{ secrets.REACT_APP_KILN_URL_TEST }}" >> $GITHUB_ENV
-            echo "REACT_APP_ENV=${{ env.REACT_APP_ENV_TEST }}" >> $GITHUB_ENV
 
           else
             echo "APP_PORT=${{ secrets.APP_PORT_DEV }}" >> $GITHUB_ENV
             echo "REACT_APP_SSO_URL=${{ secrets.REACT_APP_SSO_URL_DEV }}" >> $GITHUB_ENV
             echo "REACT_APP_KILN_PREVIEW_URL=${{ secrets.REACT_APP_KILN_PREVIEW_URL_DEV }}" >> $GITHUB_ENV
             echo "REACT_APP_KILN_URL=${{ secrets.REACT_APP_KILN_URL_DEV }}" >> $GITHUB_ENV
-            echo "REACT_APP_ENV=${{ secrets.REACT_APP_ENV_DEV }}" >> $GITHUB_ENV
           fi
 
       - name: Build and push Docker image
@@ -81,7 +78,6 @@ jobs:
             REACT_APP_SSO_URL=${{ env.REACT_APP_SSO_URL }}
             REACT_APP_KILN_PREVIEW_URL=${{ env.REACT_APP_KILN_PREVIEW_URL }}
             REACT_APP_KILN_URL=${{ env.REACT_APP_KILN_URL }}
-            REACT_APP_ENV=${{ env.REACT_APP_ENV }}
 
     
 
