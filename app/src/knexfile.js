@@ -12,12 +12,6 @@ module.exports = {
         database: process.env.POSTGRES_DB,
         port: process.env.POSTGRES_PORT,
     },
-<<<<<<< HEAD
-    migrations: {
-        directory: path.join(__dirname, "migrations"),
-    },
-};
-=======
     pool: {
         min: 0,
         max: 50,
@@ -46,4 +40,3 @@ module.exports = {
 };
 
 const knex = require('knex')(module.exports);
->>>>>>> test
