@@ -105,6 +105,7 @@ router.put('/forms/update', protectedRoute(), async (req, res) => {
     await db('form_templates')
       .where({ form_id })
       .andWhereNot({ id })
+      .andWhere({ deployed_to })
       .update({ deployed_to: "" });
 
     // Update the deployed_to status for the specified form

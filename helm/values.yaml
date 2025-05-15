@@ -1,0 +1,58 @@
+replicaCount: 1
+
+configMapName: template-repo-config
+secretName: template-repo-app-secrets
+
+secrets:
+  POSTGRES_USER_SECRET:
+    name: template-repo-patroni
+    key: app-db-username
+  POSTGRES_PASSWORD_SECRET:
+    name: template-repo-patroni
+    key: app-db-password
+  POSTGRES_DB_SECRET:
+    name: template-repo-patroni
+    key: app-db-name
+
+config:
+  REACT_APP_API_URL:
+    name: template-repo-config
+    key: REACT_APP_API_URL
+
+app:
+  image:
+    repository: ghcr.io/bcgov/template-repository
+    tag: ""
+
+resources:
+  requests:
+    memory: "256Mi"
+    cpu: "10m"
+  limits:
+    memory: "512Mi"
+    cpu: "250m"
+
+postgresql:
+  enabled: false
+  external:
+    host: template-repo-patroni
+    port: 5432
+    usernameFrom:
+      secretKeyRef:
+        name: template-repo-patroni
+        key: app-db-username
+    passwordFrom:
+      secretKeyRef:
+        name: template-repo-patroni
+        key: app-db-password
+    databaseFrom:
+      secretKeyRef:
+        name: template-repo-patroni
+        key: app-db-name
+
+service:
+  type: ClusterIP
+  appPort: 3000
+
+image:
+  pullPolicy: Always  

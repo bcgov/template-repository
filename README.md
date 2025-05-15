@@ -27,25 +27,26 @@ cd template-respository
 
 ## Configuration
 
-Copy and rename `.env.example` file to `.env` both in the root and in /app/client:
+Copy and rename `.env.example` file to `.env` both in the root:
 
 ```
 Copy-Item .env.example .env
 ```
 
-Update variables in `.env` files with your credentials and congifurations.
+Update variables in `.env` file with your credentials and congifurations.
 
 ## Docker Deployment
 
-Have Docker installed and running. Run the following commands:
+Have Docker installed and running. Run the following commands for local deployment:
+(Windows)
+```
+$env:DOCKERFILE="dockerfile-local"; docker-compose up --build
+```
+(Mac/Linux)
+```
+DOCKERFILE=dockerfile-local docker-compose up --build
+```
 
-```
-docker-compose build
-```
-
-```
-docker-compose up
-```
 Server should be listening on `localhost:3000`
 
 ## User Interface

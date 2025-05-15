@@ -1,10 +1,17 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
-import { Header, Button, Modal, TextArea, Dialog } from "@bcgov/design-system-react-components";
+import { Header, Button, Modal, TextArea, TextField, Dialog, InlineAlert } from "@bcgov/design-system-react-components";
 import { MaterialReactTable, useMaterialReactTable } from "material-react-table";
 import { useSSO } from "@bcgov/citz-imb-sso-react";
-import { IoIosLogOut } from "react-icons/io";
+import { IoIosLogOut,IoMdCopy } from "react-icons/io";
 import { MdEdit } from "react-icons/md";
 import "./FormList.css";
+
+const ENVIRONMENT_OPTIONS = [
+    { value: "",    label: "None" },
+    { value: "dev", label: "Development" },
+    { value: "test", label: "Test" },
+    { value: "prod", label: "Production" },
+  ];
 
 const FormList = () => {
     const [forms, setForms] = useState([]);
@@ -18,8 +25,38 @@ const FormList = () => {
     const [newDeployedStatus, setNewDeployedStatus] = useState("");
     const [editOptions, setEditOptions] = useState([]);
     const [grouping, setGrouping] = useState(["form_id", "deployed_to"]);
+    const [alertInfo, setAlertInfo] = useState(null);
+    const [templateUuid, setTemplateUuid] = useState(() => crypto.randomUUID());  
 
     const { fetchProtectedRoute, getAuthorizationHeaderValue, logout, user } = useSSO();
+
+    const refreshUuid = () => {
+        setTemplateUuid(crypto.randomUUID());
+      };
+
+    const flashAlert = (info, ms = 1500) => {
+        setAlertInfo(info);
+        setTimeout(() => setAlertInfo(null), ms);
+      };
+    
+      const handleCopy = async () => {
+        try {
+          const text = JSON.stringify(selectedJson, null, 2);
+          await navigator.clipboard.writeText(text);
+          flashAlert({
+            title: "Success",
+            description: "JSON has been copied to clipboard",
+            variant: "success",
+          });
+        } catch (e) {
+          console.error(e);
+          flashAlert({
+            title: "Error",
+            description: "Failed to copy JSON",
+            variant: "danger",
+          });
+        }
+      };
 
     //Fetches forms from the database
     const fetchForms = useCallback(async () => {
@@ -53,14 +90,22 @@ const FormList = () => {
     //Uploads form to the database
     const handleOkPress = async () => {
         try {
-            const response = await fetch("/api/forms", {
+            const uploadResponse = await fetch("/api/forms", {
                 method: "POST",
                 headers: { "Content-Type": "application/json", "Authorization": getAuthorizationHeaderValue() },
                 body: inputText,
             });
+            if (!uploadResponse.ok) {
+                throw new Error(`Failed to upload template: ${uploadResponse.status} – ${uploadResponse.statusText}`);
+            }
 
-            if (!response.ok) {
-                throw new Error("Failed to upload template");
+            const updateResponse = await fetch("/api/forms/update", {
+                method: "PUT",
+                headers: { "Content-Type": "application/json", "Authorization": getAuthorizationHeaderValue() },
+                body: inputText,
+            });
+            if (!updateResponse.ok) {
+                throw new Error(`Failed to update template: ${updateResponse.status} – ${updateResponse.statusText}`);
             }
 
             fetchForms();
@@ -115,16 +160,7 @@ const FormList = () => {
     };
 
     //Sets the dropdown values of "Edit Deployment Status" based on where the form is deployed
-    const getEnvironmentOptions = () => {
-        const env = process.env.REACT_APP_ENV || "dev";
-        const optionsMap = {
-            dev: [{ value: "", label: "None" }, { value: "dev", label: "Development" }],
-            test: [{ value: "", label: "None" }, { value: "test", label: "Test" }],
-            prod: [{ value: "", label: "None" }, { value: "prod", label: "Production" }],
-        };
-
-        return optionsMap[env] || [{ value: "", label: "None" }];
-    };
+    const getEnvironmentOptions = () => ENVIRONMENT_OPTIONS;
 
     const toggleGrouping = () => {
         setGrouping((prev) => (prev.length > 0 ? [] : ["form_id", "deployed_to"]));
@@ -305,8 +341,29 @@ const FormList = () => {
 
     return (
         <div className="App">
+            {alertInfo && (
+        <div
+          style={{
+            position: "fixed",
+            top: 16,        
+            right: 16,      
+            width: 300,     
+            zIndex: 2000,   
+            backgroundColor: "rgba(255,255,255,0.95)",      
+            borderRadius: "8px", 
+            boxShadow: "0 2px 6px rgba(0,0,0,0.15)"
+          }}
+        >
+          <InlineAlert
+            title={alertInfo.title}
+            description={alertInfo.description}
+            variant={alertInfo.variant}
+            onClose={() => setAlertInfo(null)}
+          />
+        </div>
+      )}
             <Header title="Form Templates">
-                <Button size="medium" variant="primary" onPress={() => setModalVisible(true)}>
+                <Button size="medium" variant="primary" onPress={() => {refreshUuid(); setModalVisible(true)}}>
                     Upload
                 </Button>
                 <span>
@@ -318,17 +375,66 @@ const FormList = () => {
             </Header>
             <Modal isOpen={modalVisible} onOpenChange={setModalVisible}>
                 <Dialog isCloseable role="dialog">
-                    <div className="dialog-container">
+                    <div className="dialog-container"
+                    style={{
+                        padding: "1rem",
+                        paddingBottom: "2rem",
+                        boxSizing: "border-box",
+                        display: "flex",
+                        flexDirection: "column",
+                        height: "100%",
+                      }}>
+                    <div
+                        style={{
+                            display: "flex",
+                            alignItems: "center",
+                        }}
+                        >
+                        <Button variant="secondary" onPress={refreshUuid} style={{ marginRight: "1rem" }}>
+                            ↻ 
+                        </Button>
+                        <TextField
+                            value={templateUuid}
+                            onChange={(val) => setTemplateUuid(val)}
+                            style={{
+                                flex: "0 0 auto",             
+                                width: "fit-content",         
+                                minWidth: "350px",            
+                              }}
+                        />
+                        <Button
+    variant="secondary"
+    onPress={async () => {
+      try {
+        await navigator.clipboard.writeText(templateUuid);
+        flashAlert({
+          title: "Copied",
+          description: "UUID has been copied",
+          variant: "success",
+        });
+      } catch (e) {
+        flashAlert({
+          title: "Error",
+          description: "Failed to copy UUID",
+          variant: "danger",
+        });
+      }
+    }}
+    style={{ marginLeft: "1rem" }}
+  >
+                        <IoMdCopy />
+                        </Button>
+                        </div>
                         <TextArea
                             placeholder="Paste Form Template JSON here..."
                             value={inputText}
                             onChange={(value) => setInputText(value)}
-                            style={{ flex: 1, marginTop: "3vh", width: "100%" }}
+                            style={{ flex: 1, marginTop: "1.5vh", width: "100%"}}
                         />
                         {errorModal && (
-                            <p style={{ color: "red", fontWeight: "bold", margin: "1vh" }}>{errorModal}</p>
+                            <p style={{ color: "red", fontWeight: "bold", margin: "1vh 0 0 0" }}>{errorModal}</p>
                         )}
-                        <div style={{ display: "flex", justifyContent: "space-between" }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", marginTop: "1vh" }}>
                             <Button onPress={handleCancelPress}>Cancel</Button>
                             <Button onPress={handleOkPress}>Ok</Button>
                         </div>
@@ -345,6 +451,9 @@ const FormList = () => {
                             </pre>
                             <div style={{ display: "flex", justifyContent: "space-between", margin: "3vh" }}>
                                 <Button onPress={() => setSelectedJson(null)}>Close</Button>
+                                <Button onPress={handleCopy} variant="primary">
+                                Copy JSON
+                                </Button>
                                 <Button onPress={handleDownloadJson} variant="primary">
                                     Download JSON
                                 </Button>

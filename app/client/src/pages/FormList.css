@@ -14,7 +14,7 @@
 }
 
 .bcds-react-aria-TextArea--Input {
-  height: 77vh;
+  height: 73vh !important;
 }
 
 .dialog-container {
@@ -25,3 +25,8 @@
   height: 91vh;
   padding: 2vh;
 }
+
+.bcds-react-aria-TextArea--Container {
+  height: 75vh;
+}
+

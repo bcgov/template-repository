@@ -10,16 +10,16 @@ const Login = () => {
     if (isAuthenticated) {
         return <Navigate to="/forms" replace />;
     }
-    console.log("REACT_APP_SSO_URL:", process.env.REACT_APP_SSO_URL);
-    console.log("Type of URL:", typeof process.env.REACT_APP_SSO_URL);
-    console.log("Value of URL:", process.env.REACT_APP_SSO_URL);
 
     return (
         <div className="App">
             <Header title="Form Templates"></Header>
             <div className="login-container">
                 <h3 style={{ margin: "3vh" }}>Please log in to access this application</h3>
-                <Button onPress={() => login({ backendURL: process.env.REACT_APP_SSO_URL })}>Log In</Button>
+                <Button onPress={() => {
+                    //console.log("Backend URL passed to login:", process.env.REACT_APP_SSO_URL);
+                    login({ backendURL: process.env.REACT_APP_SSO_URL })
+                }}>Log In</Button>
             </div>
         </div>
     );
