@@ -17,7 +17,6 @@ const Login = () => {
             <div className="login-container">
                 <h3 style={{ margin: "3vh" }}>Please log in to access this application</h3>
                 <Button onPress={() => {
-                    //console.log("Backend URL passed to login:", process.env.REACT_APP_SSO_URL);
                     login({ 
                         backendURL: process.env.REACT_APP_SSO_URL,
                         postLoginRedirectURL: "/forms",  
