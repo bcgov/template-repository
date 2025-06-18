@@ -3,10 +3,13 @@
     "@bcgov/citz-imb-sso-express": "^1.0.2",
     "config": "^3.3.12",
     "dotenv": "^16.4.5",
-    "knex": "3.1.0",
     "express": "^4.21.0",
+    "form-data": "^4.0.3",
+    "knex": "3.1.0",
+    "multer": "^2.0.1",
     "node-fetch": "^2.7.0",
-    "pg": "^8.13.0"
+    "pg": "^8.13.0",
+    "uuid": "^11.1.0"
   },
   "scripts": {
     "start": "node ./app/src/index.js",
