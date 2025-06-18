@@ -169,7 +169,7 @@ router.post('/newPETStemplate', protectedRoute(), upload.single('libre_office_te
         contentType: file.mimetype,
       });
       
-      const petsRes = await fetch('${PETS_BASE_URL}/api/v2/template', {
+      const petsRes = await fetch(`${PETS_BASE_URL}/api/v2/template`, {
         method: 'POST',
         headers: form.getHeaders(),
         body: form,
@@ -203,7 +203,7 @@ router.get('/template/:template_uuid', protectedRoute(), async (req, res) => {
   try {
     const { template_uuid } = req.params;
 
-    const petsUrl = `${PETS_BASE_URL}/api/v2/template/${template_uuid}?download=true'}`;
+    const petsUrl = `${PETS_BASE_URL}/api/v2/template/${template_uuid}?download=true`;
     const petsRes = await fetch(petsUrl);
 
     if (!petsRes.ok) {
