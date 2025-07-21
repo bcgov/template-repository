@@ -23,10 +23,16 @@ sso(app, {
 
 app.use(express.json());
 
+app.get('/health', (_req, res) => {
+  res.sendStatus(200);
+});
+
 app.use('/api', protectedRoute(), formRoutes);
 
 app.use((req, res, next) => {
-  console.log(`Incoming request: ${req.method} ${req.url}`);
+  if (!(req.method === 'GET' && req.path === '/health')) {
+    console.log(`Incoming request: ${req.method} ${req.url}`);
+  }
   next();
 });
 
