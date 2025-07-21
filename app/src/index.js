@@ -12,6 +12,9 @@ const port = process.env.APP_PORT;
 
 global.fetch = fetch;
 
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
+
 sso(app, {
   afterUserLogin: (user) => {
     console.log(`User logged in: ${user.display_name}`);
