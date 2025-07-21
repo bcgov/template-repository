@@ -13,7 +13,7 @@ const PETS_BASE_URL = process.env.PETS_BASE_URL;
 
 // POST request to add a new form template
 router.post('/forms', async (req, res) => {
-  const { id, version, ministry_id, lastModified, title, form_id, deployed_to, dataSources, data } = req.body;
+  const { id, version, ministry_id, last_modified, title, form_id, deployed_to, dataSources, data, interface: uiInterface = [] } = req.body;
 
   try {
     const existingForm = await db('form_templates').where({ id }).first();
@@ -26,12 +26,13 @@ router.post('/forms', async (req, res) => {
       id,
       version,
       ministry_id,
-      last_modified: lastModified,
+      last_modified,
       title,
       form_id,
       deployed_to,
       dataSources: JSON.stringify(dataSources),
       data,
+      interface: JSON.stringify(uiInterface),
     });
 
     res.status(201).send({ id, message: 'Form template created successfully!' });
