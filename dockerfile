@@ -32,7 +32,6 @@ RUN echo "REACT_APP_SSO_URL=${REACT_APP_SSO_URL}" >> .env && \
     echo "REACT_APP_KILN_PREVIEW_URL=${REACT_APP_KILN_PREVIEW_URL}" >> .env && \
     echo "REACT_APP_KILN_URL=${REACT_APP_KILN_URL}" >> .env 
 
-
 # Build the React app
 RUN npm run build
 
