@@ -1,0 +1,54 @@
+.App {
+  text-align: left;
+  transition: background-color 0.3s, color 0.3s;
+  background-color: #ffffff;
+  color: #000000;
+}
+
+.bcds-header {
+  justify-content: normal !important;
+}
+
+.bcds-header--container {
+  max-width: 100% !important;
+}
+
+.bcds-react-aria-TextArea--Input {
+  height: 73vh !important;
+}
+
+.dialog-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: stretch;
+  height: 91vh;
+  padding: 2vh;
+}
+
+.bcds-react-aria-TextArea--Container {
+  height: auto;
+}
+
+.small-notes textarea {
+  height: 150px !important;    /* about one-third of a typical modal */
+  min-height: 150px !important;
+  max-height: 150px !important;
+  resize: vertical;            /* user can still drag to resize taller */
+}
+
+.dropzone {
+  border: 2px dashed #ccc;
+  padding: 1rem;
+  text-align: center;
+  border-radius: 8px;
+  cursor: pointer;
+  min-height: 7rem;
+  justify-content: center;   
+  align-items: center;   
+  display: flex; 
+}
+.dropzone p {
+  margin: 0;
+  font-size: 0.9rem;
+}

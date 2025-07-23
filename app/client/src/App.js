@@ -2,6 +2,7 @@ import React from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Login from "./pages/Login";
 import FormList from "./pages/FormList";
+import PdfTemplates from "./pages/PDFTemplates";
 import NotAuthorized from "./pages/NotAuthorized";
 import { useSSO } from "@bcgov/citz-imb-sso-react";
 import "@bcgov/bc-sans/css/BC_Sans.css";
@@ -25,6 +26,7 @@ const App = () => {
       <Routes>
         <Route path="/" element={<Navigate to="/forms" replace />} />
         <Route path="/forms" element={<FormList />} />
+        <Route path="/pdf-templates" element={<PdfTemplates />} />
       </Routes>
     </Router>
   );
