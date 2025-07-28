@@ -293,6 +293,4 @@ router.post('/pdfRender/:id', protectedRoute(), async (req, res) => {
   }
 });
 
-
-
 module.exports = router;
