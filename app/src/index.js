@@ -12,6 +12,9 @@ const port = process.env.APP_PORT;
 
 global.fetch = fetch;
 
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
+
 sso(app, {
   afterUserLogin: (user) => {
     console.log(`User logged in: ${user.display_name}`);
@@ -23,10 +26,16 @@ sso(app, {
 
 app.use(express.json());
 
+app.get('/health', (_req, res) => {
+  res.sendStatus(200);
+});
+
 app.use('/api', protectedRoute(), formRoutes);
 
 app.use((req, res, next) => {
-  console.log(`Incoming request: ${req.method} ${req.url}`);
+  if (!(req.method === 'GET' && req.path === '/health')) {
+    console.log(`Incoming request: ${req.method} ${req.url}`);
+  }
   next();
 });
 

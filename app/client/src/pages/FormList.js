@@ -27,8 +27,22 @@ const FormList = () => {
     const [grouping, setGrouping] = useState(["form_id", "deployed_to"]);
     const [alertInfo, setAlertInfo] = useState(null);
     const [templateUuid, setTemplateUuid] = useState(() => crypto.randomUUID());  
+    const [pdfTemplates, setPdfTemplates] = useState([]);
+    const [selectedPdfTemplateId, setSelectedPdfTemplateId] = useState(null);
+    const [selectedPdfTemplateLabel, setSelectedPdfTemplateLabel] = useState("");
 
     const { fetchProtectedRoute, getAuthorizationHeaderValue, logout, user } = useSSO();
+
+    useEffect(() => {
+        if (selectedPdfTemplateId) {
+          const tpl = pdfTemplates.find((t) => t.id === selectedPdfTemplateId);
+          setSelectedPdfTemplateLabel(
+            tpl ? `${tpl.name} v${tpl.version}` : ""
+          );
+        } else {
+          setSelectedPdfTemplateLabel("");
+        }
+      }, [selectedPdfTemplateId, pdfTemplates]);
 
     const refreshUuid = () => {
         setTemplateUuid(crypto.randomUUID());
@@ -87,6 +101,15 @@ const FormList = () => {
         setSelectedJson(json);
     };
 
+    useEffect(() => {
+        (async () => {
+          const res = await fetch("/api/pdf-templates-list", {
+            headers: { Authorization: getAuthorizationHeaderValue() },
+          });
+          if (res.ok) setPdfTemplates(await res.json());
+        })();
+      }, [getAuthorizationHeaderValue]);
+
     //Uploads form to the database
     const handleOkPress = async () => {
         try {
@@ -120,7 +143,7 @@ const FormList = () => {
 
     //Updates the deployment status of a form
     const handleDeployedStatusChange = useCallback(
-        async (id, form_id, newStatus) => {
+        async (id, form_id, newStatus, newPDFTemplate) => {
             try {
                 const response = await fetch("/api/forms/update", {
                     method: "PUT",
@@ -128,10 +151,10 @@ const FormList = () => {
                         "Content-Type": "application/json",
                         Authorization: getAuthorizationHeaderValue(),
                     },
-                    body: JSON.stringify({ id, form_id, deployed_to: newStatus }),
+                    body: JSON.stringify({ id, form_id, deployed_to: newStatus, pdf_template_id: newPDFTemplate }),
                 });
 
-                if (!response.ok) throw new Error("Failed to update deployed status");
+                if (!response.ok) throw new Error("Failed to update form version");
 
                 fetchForms();
             } catch (err) {
@@ -141,9 +164,11 @@ const FormList = () => {
         [fetchProtectedRoute, getAuthorizationHeaderValue, fetchForms]
     );
 
+
     const openEditModal = (row) => {
         setSelectedRow(row);
         setNewDeployedStatus(row.original.deployed_to || "");
+        setSelectedPdfTemplateId(row.original.pdf_template_id || null);
         const options = getEnvironmentOptions();
         setEditOptions(options);
         setIsEditModalVisible(true);
@@ -154,7 +179,8 @@ const FormList = () => {
             handleDeployedStatusChange(
                 selectedRow.original.id,
                 selectedRow.original.form_id,
-                newDeployedStatus
+                newDeployedStatus,
+                selectedPdfTemplateId
             ).then(() => setIsEditModalVisible(false));
         }
     };
@@ -181,6 +207,22 @@ const FormList = () => {
         link.download = `form_${selectedJson.form_id || "data"}.json`;
         link.click();
         URL.revokeObjectURL(link.href);
+    };
+
+    // when they type/pick, we’ll grab the label and also pick the matching id (or null)
+    const onPdfTemplateLabelChange = (e ) => {
+        const label = e.target.value;
+        setSelectedPdfTemplateLabel(label);
+
+        if (!label) {
+            setSelectedPdfTemplateId(null);
+            return;
+        }
+
+        const found = pdfTemplates.find(
+            (pt) => `${pt.name} (v${pt.version})` === label
+        );
+        setSelectedPdfTemplateId(found?.id ?? null);
     };
 
     //Column configuration for the Form list table
@@ -318,11 +360,17 @@ const FormList = () => {
         isMultiSortEvent: () => true,
         state: { grouping },
         renderTopToolbarCustomActions: () => (
-            <div style={{ display: "flex", gap: "1vh" }}>
-                <Button variant="secondary" onPress={toggleGrouping}>
-                    {grouping.length > 0 ? "Ungroup" : "Group"}
-                </Button>
-            </div>
+        <div style={{ display: "flex", gap: "1vh" }}>
+            <Button variant="secondary" onPress={toggleGrouping}>
+            {grouping.length > 0 ? "Ungroup" : "Group"}
+            </Button>
+            <Button
+            variant="primary"
+            onPress={() => window.location.href = "/pdf-templates"}
+            >
+            PDF Templates
+            </Button>
+        </div>
         ),
         initialState: {
             density: "compact",
@@ -481,6 +529,41 @@ const FormList = () => {
                                         </option>
                                     ))}
                                 </select>
+                                <h3>PDF Template</h3>
+                                <div style={{ width: "100%" }}>
+                                <input
+                                    type="text"
+                                    list="pdf-templates-datalist"
+                                    placeholder="Type to search…"
+                                    value={selectedPdfTemplateLabel}
+                                    onChange={(e) => {
+                                        const v = e.target.value;
+                                        setSelectedPdfTemplateLabel(v);
+                                        if (!v) {
+                                            setSelectedPdfTemplateId(null);
+                                        } else {
+                                            const m = pdfTemplates.find((pt) => `${pt.name} v${pt.version}` === v);
+                                            setSelectedPdfTemplateId(m?.id ?? null);
+                                        }
+                                    }}
+                                    style={{
+                                    width: "100%",
+                                    padding: "0.5rem",
+                                    boxSizing: "border-box",
+                                    }}
+                                />
+
+                                <datalist id="pdf-templates-datalist">
+                                    {/* None option if you want */}
+                                    <option value="" label="– None –" />
+                                    {pdfTemplates.map((pt) => (
+                                    <option
+                                        key={pt.id}
+                                        value={`${pt.name} v${pt.version}`}
+                                    />
+                                    ))}
+                                </datalist>
+                                </div>
                                 <div style={{ marginTop: "2vh", display: "flex", justifyContent: "flex-end" }}>
                                     <Button onPress={() => setIsEditModalVisible(false)}>Cancel</Button>
                                     <Button onPress={handleModalSubmit} style={{ marginLeft: "1vh" }}>
