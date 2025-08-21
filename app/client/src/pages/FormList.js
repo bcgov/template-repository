@@ -248,6 +248,13 @@ const FormList = () => {
             },
         },
         {
+            accessorKey: "last_modified",
+            header: "Last Modified",
+            Cell: ({ cell }) => new Date(cell.getValue()).toLocaleString(),
+            enableEditing: false,
+            size: 50,
+        },
+        {
             accessorKey: "version",
             header: "Version",
             filterVariant: "autocomplete",
@@ -274,13 +281,6 @@ const FormList = () => {
             accessorKey: "id",
             header: "UUID",
             filterVariant: "autocomplete",
-            enableEditing: false,
-            size: 50,
-        },
-        {
-            accessorKey: "last_modified",
-            header: "Last Modified",
-            Cell: ({ cell }) => new Date(cell.getValue()).toLocaleString(),
             enableEditing: false,
             size: 50,
         },
@@ -379,7 +379,7 @@ const FormList = () => {
             sorting: [
                 { id: "form_id", desc: false },
                 { id: "deployed_to", desc: false },
-                { id: "version", desc: true },
+                { id: "last_modified", desc: true },
             ],
             pagination: {
                 pageSize: 30,
