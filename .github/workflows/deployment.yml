@@ -6,6 +6,7 @@ on:
       - dev
       - test
       - main
+  workflow_dispatch:
 
 env:
   REGISTRY: ghcr.io
@@ -112,3 +113,35 @@ jobs:
       - name: Trigger OpenShift Rollout
         run: |
           oc rollout restart deployment/template-repository-app -n ${{ github.ref == 'refs/heads/main' && secrets.OPENSHIFT_PROD_NAMESPACE || (github.ref == 'refs/heads/dev' && secrets.OPENSHIFT_DEV_NAMESPACE) || secrets.OPENSHIFT_TEST_NAMESPACE }}
+
+ deploy_to_portal:
+    needs: deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v4
+
+      - name: Install oc CLI
+        uses: redhat-actions/oc-installer@v1
+
+      - name: Authenticate with OpenShift 
+        uses: redhat-actions/oc-login@v1
+        with:
+          openshift_server_url: ${{ secrets.OPENSHIFT_SERVER }}
+          namespace: ${{ github.ref == 'refs/heads/main' && secrets.OPENSHIFT_PROD_PORTAL_NAMESPACE || (github.ref == 'refs/heads/dev' && secrets.OPENSHIFT_DEV_PORTAL_NAMESPACE) || secrets.OPENSHIFT_TEST_PORTAL_NAMESPACE }}
+          openshift_token: ${{ github.ref == 'refs/heads/main' && secrets.OPENSHIFT_PROD_PORTAL_TOKEN || (github.ref == 'refs/heads/dev' && secrets.OPENSHIFT_DEV_PORTAL_TOKEN) || secrets.OPENSHIFT_TEST_PORTAL_TOKEN }}
+          insecure_skip_tls_verify: true
+
+      - name: Deploy with Helm
+        run: |
+          helm upgrade --install template-repository ./helm \
+          --namespace ${{ github.ref == 'refs/heads/main' && secrets.OPENSHIFT_PROD_PORTAL_NAMESPACE || (github.ref == 'refs/heads/dev' && secrets.OPENSHIFT_DEV_PORTAL_NAMESPACE) || secrets.OPENSHIFT_TEST_PORTAL_NAMESPACE }} \
+          --set app.image.repository=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }} \
+          --set app.image.tag=${{ needs.build_and_push.outputs.image_tag }} \
+          --set postgresql.image.repository=postgres \
+          --set postgresql.image.tag=12
+
+      - name: Trigger OpenShift Rollout
+        run: |
+          oc rollout restart deployment/template-repository-app -n ${{ github.ref == 'refs/heads/main' && secrets.OPENSHIFT_PROD_PORTAL_NAMESPACE || (github.ref == 'refs/heads/dev' && secrets.OPENSHIFT_DEV_PORTAL_NAMESPACE) || secrets.OPENSHIFT_TEST_PORTAL_NAMESPACE }}
