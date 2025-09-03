@@ -115,7 +115,7 @@ jobs:
           oc rollout restart deployment/template-repository-app -n ${{ github.ref == 'refs/heads/main' && secrets.OPENSHIFT_PROD_NAMESPACE || (github.ref == 'refs/heads/dev' && secrets.OPENSHIFT_DEV_NAMESPACE) || secrets.OPENSHIFT_TEST_NAMESPACE }}
 
   deploy_to_portal:
-    needs: deploy
+    needs: [deploy, build_and_push]
     runs-on: ubuntu-latest
 
     steps:
