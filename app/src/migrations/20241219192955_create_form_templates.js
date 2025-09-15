@@ -2,8 +2,10 @@
  * @param { import("knex").Knex } knex
  * @returns { Promise<void> }
  */
-exports.up = function (knex) {
-    return knex.schema.createTable("form_templates", (table) => {
+ exports.up = async function (knex) {
+    const exists = await knex.schema.hasTable("form_templates");
+    if (!exists) {
+      return knex.schema.createTable("form_templates", (table) => {
         table.uuid("id").primary();
         table.string("version", 10);
         table.string("ministry_id", 10);
@@ -13,13 +15,16 @@ exports.up = function (knex) {
         table.string("deployed_to", 10);
         table.jsonb("dataSources");
         table.jsonb("data").notNullable();
-    });
-};
-
-/**
- * @param { import("knex").Knex } knex
- * @returns { Promise<void> }
- */
-exports.down = function (knex) {
+      });
+    }
+    // no-op if table already exists
+  };
+  
+  /**
+   * @param { import("knex").Knex } knex
+   * @returns { Promise<void> }
+   */
+  exports.down = function (knex) {
     return knex.schema.dropTableIfExists("form_templates");
-};
+  };
+  
