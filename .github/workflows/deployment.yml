@@ -80,8 +80,27 @@ jobs:
             REACT_APP_SSO_URL=${{ env.REACT_APP_SSO_URL }}
             REACT_APP_KILN_PREVIEW_URL=${{ env.REACT_APP_KILN_PREVIEW_URL }}
             REACT_APP_KILN_URL=${{ env.REACT_APP_KILN_URL }}
+      
+      - name: Set tools tag
+        if: github.ref == 'refs/heads/dev'
+        id: tools_tag
+        run: echo "tools_image_tag=${GITHUB_REF##*/}-tools" >> $GITHUB_OUTPUT
 
-    
+      - name: Build and push Docker image (tools variant)
+        if: github.ref == 'refs/heads/dev'
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          no-cache: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.tools_tag.outputs.tools_image_tag }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            APP_PORT=${{ env.APP_PORT }}
+            # Use the TOOLS SSO value here as requested:
+            REACT_APP_SSO_URL=${{ secrets.REACT_APP_SSO_URL_TOOLS }}
+            REACT_APP_KILN_PREVIEW_URL=${{ env.REACT_APP_KILN_PREVIEW_URL_TOOLS }}
+            REACT_APP_KILN_URL=${{ env.REACT_APP_KILN_URL_TOOLS }}
 
   deploy:
     needs: build_and_push
@@ -131,7 +150,7 @@ jobs:
           helm upgrade --install template-repository ./helm \
             --namespace "${{ secrets.OPENSHIFT_TOOLS_NAMESPACE }}" \
             --set app.image.repository=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }} \
-            --set app.image.tag=${{ needs.build_and_push.outputs.image_tag }} \
+            --set app.image.tag=${{ needs.build_and_push.outputs.tools_image_tag }} \
             --set postgresql.image.repository=postgres \
             --set postgresql.image.tag=12
 
