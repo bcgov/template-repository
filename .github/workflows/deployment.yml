@@ -100,8 +100,8 @@ jobs:
             APP_PORT=${{ env.APP_PORT }}
             # Use the TOOLS SSO value here as requested:
             REACT_APP_SSO_URL=${{ secrets.REACT_APP_SSO_URL_TOOLS }}
-            REACT_APP_KILN_PREVIEW_URL=${{ secrets.REACT_APP_KILN_PREVIEW_URL_TOOLS }}
-            REACT_APP_KILN_URL=${{ secrets.REACT_APP_KILN_URL_TOOLS }}
+            REACT_APP_KILN_PREVIEW_URL=${{ secrets.REACT_APP_KILN_PREVIEW_URL_DEV }}
+            REACT_APP_KILN_URL=${{secrets.REACT_APP_KILN_PREVIEW_URL_DEV}}
 
   deploy:
     needs: build_and_push
