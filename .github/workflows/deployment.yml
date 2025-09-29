@@ -136,7 +136,7 @@ jobs:
       - name: Trigger OpenShift Rollout (tools env)
         if: github.ref == 'refs/heads/dev'
         run: |
-          oc rollout restart deployment/communication-layer \
+          oc rollout restart deployment/template-repository-app \
             -n "${{ secrets.OPENSHIFT_TOOLS_NAMESPACE }}"
             
   build_and_push_portal:
