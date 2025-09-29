@@ -19,6 +19,7 @@ jobs:
     
     outputs:
       image_tag: ${{ steps.branch_tag.outputs.image_tag }}
+      tools_image_tag: ${{ steps.tools_tag.outputs.tools_image_tag }}
     
     steps:
       - name: Checkout the repository
@@ -99,8 +100,8 @@ jobs:
             APP_PORT=${{ env.APP_PORT }}
             # Use the TOOLS SSO value here as requested:
             REACT_APP_SSO_URL=${{ secrets.REACT_APP_SSO_URL_TOOLS }}
-            REACT_APP_KILN_PREVIEW_URL=${{ env.REACT_APP_KILN_PREVIEW_URL_TOOLS }}
-            REACT_APP_KILN_URL=${{ env.REACT_APP_KILN_URL_TOOLS }}
+            REACT_APP_KILN_PREVIEW_URL=${{ secrets.REACT_APP_KILN_PREVIEW_URL_TOOLS }}
+            REACT_APP_KILN_URL=${{ secrets.REACT_APP_KILN_URL_TOOLS }}
 
   deploy:
     needs: build_and_push
