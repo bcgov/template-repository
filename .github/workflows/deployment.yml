@@ -130,8 +130,10 @@ jobs:
         run: |
           helm upgrade --install template-repository ./helm \
             --namespace "${{ secrets.OPENSHIFT_TOOLS_NAMESPACE }}" \
-            --set image.repository=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }} \
-            --set image.tag=${{ needs.build_and_push.outputs.image_tag }}
+            --set app.image.repository=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }} \
+            --set app.image.tag=${{ needs.build_and_push.outputs.image_tag }} \
+            --set postgresql.image.repository=postgres \
+            --set postgresql.image.tag=12
 
       - name: Trigger OpenShift Rollout (tools env)
         if: github.ref == 'refs/heads/dev'
