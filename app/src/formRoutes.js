@@ -13,29 +13,64 @@ const PETS_BASE_URL = process.env.PETS_BASE_URL;
 
 // POST request to add a new form template
 router.post('/forms', async (req, res) => {
-  const { id, version, ministry_id, last_modified, title, form_id, deployed_to, dataSources, data, interface: uiInterface = [] } = req.body;
-
   try {
-    const existingForm = await db('form_templates').where({ id }).first();
+    let formData;
+    if (req.body.formversion) {
+      // Version 2: nested under formversion
+      const fv = req.body.formversion;
+      formData = {
+        id: fv.id,
+        version: fv.version,
+        ministry_id: fv.ministry_id,
+        last_modified: fv.data?.updated_at || fv.data?.created_at,
+        title: fv.name,
+        form_id: fv.form_id,
+        deployed_to: fv.deployed_to || '',
+        dataSources: fv.dataSources,
+        data: fv.elements, // elements array becomes data
+        interface: fv.interface,
+      };
+    } else {
+      // Version 1: fields at root level
+      formData = {
+        id: req.body.id,
+        version: req.body.version,
+        ministry_id: req.body.ministry_id,
+        last_modified: req.body.lastModified || req.body.last_modified,
+        title: req.body.title,
+        form_id: req.body.form_id,
+        deployed_to: req.body.deployed_to || '',
+        dataSources: req.body.dataSources,
+        data: req.body.data?.items || req.body.data, // handle data.items or direct data
+        interface: req.body.interface,
+      };
+    }
+
+    if (!formData.id) {
+      formData.id = uuidv4();
+    }
+
+    const existingForm = await db('form_templates').where({ id: formData.id }).first();
 
     if (existingForm) {
-      return res.status(409).send({ id, message: 'Form template already exists' });
+      return res.status(409).send({ id: formData.id, message: 'Form template already exists' });
     }
 
     await db('form_templates').insert({
-      id,
-      version,
-      ministry_id,
-      last_modified,
-      title,
-      form_id,
-      deployed_to,
-      dataSources: JSON.stringify(dataSources),
-      data,
-      interface: JSON.stringify(uiInterface),
+      id: formData.id,
+      version: formData.version,
+      ministry_id: formData.ministry_id,
+      last_modified: formData.last_modified,
+      title: formData.title,
+      form_id: formData.form_id,
+      deployed_to: formData.deployed_to,
+      dataSources: formData.dataSources ? JSON.stringify(formData.dataSources) : null,
+      data: formData.data ? JSON.stringify(formData.data) : JSON.stringify([]),
+      interface: formData.interface ? JSON.stringify(formData.interface) : JSON.stringify([]),
     });
 
-    res.status(201).send({ id, message: 'Form template created successfully!' });
+    res.status(201).send({ id: formData.id, message: 'Form template created successfully!' });
+
   } catch (err) {
     console.error(err);
     res.status(500).send('Error creating form template');
