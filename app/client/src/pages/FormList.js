@@ -11,7 +11,7 @@ const ENVIRONMENT_OPTIONS = [
     { value: "dev", label: "Development" },
     { value: "test", label: "Test" },
     { value: "prod", label: "Production" },
-  ];
+];
 
 const FormList = () => {
     const [forms, setForms] = useState([]);
@@ -26,7 +26,7 @@ const FormList = () => {
     const [editOptions, setEditOptions] = useState([]);
     const [grouping, setGrouping] = useState(["form_id", "deployed_to"]);
     const [alertInfo, setAlertInfo] = useState(null);
-    const [templateUuid, setTemplateUuid] = useState(() => crypto.randomUUID());  
+    const [templateUuid, setTemplateUuid] = useState(() => crypto.randomUUID());
     const [pdfTemplates, setPdfTemplates] = useState([]);
     const [selectedPdfTemplateId, setSelectedPdfTemplateId] = useState(null);
     const [selectedPdfTemplateLabel, setSelectedPdfTemplateLabel] = useState("");
@@ -35,42 +35,42 @@ const FormList = () => {
 
     useEffect(() => {
         if (selectedPdfTemplateId) {
-          const tpl = pdfTemplates.find((t) => t.id === selectedPdfTemplateId);
-          setSelectedPdfTemplateLabel(
-            tpl ? `${tpl.name} v${tpl.version}` : ""
-          );
+            const tpl = pdfTemplates.find((t) => t.id === selectedPdfTemplateId);
+            setSelectedPdfTemplateLabel(
+                tpl ? `${tpl.name} v${tpl.version}` : ""
+            );
         } else {
-          setSelectedPdfTemplateLabel("");
+            setSelectedPdfTemplateLabel("");
         }
-      }, [selectedPdfTemplateId, pdfTemplates]);
+    }, [selectedPdfTemplateId, pdfTemplates]);
 
     const refreshUuid = () => {
         setTemplateUuid(crypto.randomUUID());
-      };
+    };
 
     const flashAlert = (info, ms = 1500) => {
         setAlertInfo(info);
         setTimeout(() => setAlertInfo(null), ms);
-      };
-    
-      const handleCopy = async () => {
+    };
+
+    const handleCopy = async () => {
         try {
-          const text = JSON.stringify(selectedJson, null, 2);
-          await navigator.clipboard.writeText(text);
-          flashAlert({
-            title: "Success",
-            description: "JSON has been copied to clipboard",
-            variant: "success",
-          });
+            const text = JSON.stringify(selectedJson, null, 2);
+            await navigator.clipboard.writeText(text);
+            flashAlert({
+                title: "Success",
+                description: "JSON has been copied to clipboard",
+                variant: "success",
+            });
         } catch (e) {
-          console.error(e);
-          flashAlert({
-            title: "Error",
-            description: "Failed to copy JSON",
-            variant: "danger",
-          });
+            console.error(e);
+            flashAlert({
+                title: "Error",
+                description: "Failed to copy JSON",
+                variant: "danger",
+            });
         }
-      };
+    };
 
     //Fetches forms from the database
     const fetchForms = useCallback(async () => {
@@ -103,12 +103,12 @@ const FormList = () => {
 
     useEffect(() => {
         (async () => {
-          const res = await fetch("/api/pdf-templates-list", {
-            headers: { Authorization: getAuthorizationHeaderValue() },
-          });
-          if (res.ok) setPdfTemplates(await res.json());
+            const res = await fetch("/api/pdf-templates-list", {
+                headers: { Authorization: getAuthorizationHeaderValue() },
+            });
+            if (res.ok) setPdfTemplates(await res.json());
         })();
-      }, [getAuthorizationHeaderValue]);
+    }, [getAuthorizationHeaderValue]);
 
     //Uploads form to the database
     const handleOkPress = async () => {
@@ -122,13 +122,36 @@ const FormList = () => {
                 throw new Error(`Failed to upload template: ${uploadResponse.status} – ${uploadResponse.statusText}`);
             }
 
-            const updateResponse = await fetch("/api/forms/update", {
-                method: "PUT",
-                headers: { "Content-Type": "application/json", "Authorization": getAuthorizationHeaderValue() },
-                body: inputText,
-            });
-            if (!updateResponse.ok) {
-                throw new Error(`Failed to update template: ${updateResponse.status} – ${updateResponse.statusText}`);
+            const parsedJson = JSON.parse(inputText);
+            let formId, formUuid, deployedTo;
+
+            if (parsedJson.formversion) {
+                // Version 2: nested under formversion
+                formId = parsedJson.formversion.form_id;
+                formUuid = parsedJson.formversion.id;
+                deployedTo = parsedJson.formversion.deployed_to || "";
+            } else {
+                // Version 1: fields at root level
+                formId = parsedJson.form_id;
+                formUuid = parsedJson.id;
+                deployedTo = parsedJson.deployed_to || "";
+            }
+
+            // Only update if there's a deployment status to set
+            if (deployedTo) {
+                const updateResponse = await fetch("/api/forms/update", {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json", "Authorization": getAuthorizationHeaderValue() },
+                    body: JSON.stringify({
+                        id: formUuid,
+                        form_id: formId,
+                        deployed_to: deployedTo,
+                        pdf_template_id: null
+                    }),
+                });
+                if (!updateResponse.ok) {
+                    throw new Error(`Failed to update template: ${updateResponse.status} – ${updateResponse.statusText}`);
+                }
             }
 
             fetchForms();
@@ -360,17 +383,17 @@ const FormList = () => {
         isMultiSortEvent: () => true,
         state: { grouping },
         renderTopToolbarCustomActions: () => (
-        <div style={{ display: "flex", gap: "1vh" }}>
-            <Button variant="secondary" onPress={toggleGrouping}>
-            {grouping.length > 0 ? "Ungroup" : "Group"}
-            </Button>
-            <Button
-            variant="primary"
-            onPress={() => window.location.href = "/pdf-templates"}
-            >
-            PDF Templates
-            </Button>
-        </div>
+            <div style={{ display: "flex", gap: "1vh" }}>
+                <Button variant="secondary" onPress={toggleGrouping}>
+                    {grouping.length > 0 ? "Ungroup" : "Group"}
+                </Button>
+                <Button
+                    variant="primary"
+                    onPress={() => window.location.href = "/pdf-templates"}
+                >
+                    PDF Templates
+                </Button>
+            </div>
         ),
         initialState: {
             density: "compact",
@@ -390,26 +413,26 @@ const FormList = () => {
     return (
         <div className="App">
             {alertInfo && (
-        <div
-          style={{
-            position: "fixed",
-            top: 16,        
-            right: 16,      
-            width: 300,     
-            zIndex: 2000,   
-            backgroundColor: "rgba(255,255,255,0.95)",      
-            borderRadius: "8px", 
-            boxShadow: "0 2px 6px rgba(0,0,0,0.15)"
-          }}
-        >
-          <InlineAlert
-            title={alertInfo.title}
-            description={alertInfo.description}
-            variant={alertInfo.variant}
-            onClose={() => setAlertInfo(null)}
-          />
-        </div>
-      )}
+                <div
+                    style={{
+                        position: "fixed",
+                        top: 16,
+                        right: 16,
+                        width: 300,
+                        zIndex: 2000,
+                        backgroundColor: "rgba(255,255,255,0.95)",
+                        borderRadius: "8px",
+                        boxShadow: "0 2px 6px rgba(0,0,0,0.15)"
+                    }}
+                >
+                    <InlineAlert
+                        title={alertInfo.title}
+                        description={alertInfo.description}
+                        variant={alertInfo.variant}
+                        onClose={() => setAlertInfo(null)}
+                    />
+                </div>
+            )}
             <Header title="Form Templates">
                 <Button size="medium" variant="primary" onPress={() => {refreshUuid(); setModalVisible(true)}}>
                     Upload
@@ -424,54 +447,54 @@ const FormList = () => {
             <Modal isOpen={modalVisible} onOpenChange={setModalVisible}>
                 <Dialog isCloseable role="dialog">
                     <div className="dialog-container"
-                    style={{
-                        padding: "1rem",
-                        paddingBottom: "2rem",
-                        boxSizing: "border-box",
-                        display: "flex",
-                        flexDirection: "column",
-                        height: "100%",
-                      }}>
-                    <div
-                        style={{
-                            display: "flex",
-                            alignItems: "center",
-                        }}
-                        >
-                        <Button variant="secondary" onPress={refreshUuid} style={{ marginRight: "1rem" }}>
-                            ↻ 
-                        </Button>
-                        <TextField
-                            value={templateUuid}
-                            onChange={(val) => setTemplateUuid(val)}
+                         style={{
+                             padding: "1rem",
+                             paddingBottom: "2rem",
+                             boxSizing: "border-box",
+                             display: "flex",
+                             flexDirection: "column",
+                             height: "100%",
+                         }}>
+                        <div
                             style={{
-                                flex: "0 0 auto",             
-                                width: "fit-content",         
-                                minWidth: "350px",            
-                              }}
-                        />
-                        <Button
-    variant="secondary"
-    onPress={async () => {
-      try {
-        await navigator.clipboard.writeText(templateUuid);
-        flashAlert({
-          title: "Copied",
-          description: "UUID has been copied",
-          variant: "success",
-        });
-      } catch (e) {
-        flashAlert({
-          title: "Error",
-          description: "Failed to copy UUID",
-          variant: "danger",
-        });
-      }
-    }}
-    style={{ marginLeft: "1rem" }}
-  >
-                        <IoMdCopy />
-                        </Button>
+                                display: "flex",
+                                alignItems: "center",
+                            }}
+                        >
+                            <Button variant="secondary" onPress={refreshUuid} style={{ marginRight: "1rem" }}>
+                                ↻
+                            </Button>
+                            <TextField
+                                value={templateUuid}
+                                onChange={(val) => setTemplateUuid(val)}
+                                style={{
+                                    flex: "0 0 auto",
+                                    width: "fit-content",
+                                    minWidth: "350px",
+                                }}
+                            />
+                            <Button
+                                variant="secondary"
+                                onPress={async () => {
+                                    try {
+                                        await navigator.clipboard.writeText(templateUuid);
+                                        flashAlert({
+                                            title: "Copied",
+                                            description: "UUID has been copied",
+                                            variant: "success",
+                                        });
+                                    } catch (e) {
+                                        flashAlert({
+                                            title: "Error",
+                                            description: "Failed to copy UUID",
+                                            variant: "danger",
+                                        });
+                                    }
+                                }}
+                                style={{ marginLeft: "1rem" }}
+                            >
+                                <IoMdCopy />
+                            </Button>
                         </div>
                         <TextArea
                             placeholder="Paste Form Template JSON here..."
@@ -500,7 +523,7 @@ const FormList = () => {
                             <div style={{ display: "flex", justifyContent: "space-between", margin: "3vh" }}>
                                 <Button onPress={() => setSelectedJson(null)}>Close</Button>
                                 <Button onPress={handleCopy} variant="primary">
-                                Copy JSON
+                                    Copy JSON
                                 </Button>
                                 <Button onPress={handleDownloadJson} variant="primary">
                                     Download JSON
@@ -531,38 +554,38 @@ const FormList = () => {
                                 </select>
                                 <h3>PDF Template</h3>
                                 <div style={{ width: "100%" }}>
-                                <input
-                                    type="text"
-                                    list="pdf-templates-datalist"
-                                    placeholder="Type to search…"
-                                    value={selectedPdfTemplateLabel}
-                                    onChange={(e) => {
-                                        const v = e.target.value;
-                                        setSelectedPdfTemplateLabel(v);
-                                        if (!v) {
-                                            setSelectedPdfTemplateId(null);
-                                        } else {
-                                            const m = pdfTemplates.find((pt) => `${pt.name} v${pt.version}` === v);
-                                            setSelectedPdfTemplateId(m?.id ?? null);
-                                        }
-                                    }}
-                                    style={{
-                                    width: "100%",
-                                    padding: "0.5rem",
-                                    boxSizing: "border-box",
-                                    }}
-                                />
-
-                                <datalist id="pdf-templates-datalist">
-                                    {/* None option if you want */}
-                                    <option value="" label="– None –" />
-                                    {pdfTemplates.map((pt) => (
-                                    <option
-                                        key={pt.id}
-                                        value={`${pt.name} v${pt.version}`}
+                                    <input
+                                        type="text"
+                                        list="pdf-templates-datalist"
+                                        placeholder="Type to search…"
+                                        value={selectedPdfTemplateLabel}
+                                        onChange={(e) => {
+                                            const v = e.target.value;
+                                            setSelectedPdfTemplateLabel(v);
+                                            if (!v) {
+                                                setSelectedPdfTemplateId(null);
+                                            } else {
+                                                const m = pdfTemplates.find((pt) => `${pt.name} v${pt.version}` === v);
+                                                setSelectedPdfTemplateId(m?.id ?? null);
+                                            }
+                                        }}
+                                        style={{
+                                            width: "100%",
+                                            padding: "0.5rem",
+                                            boxSizing: "border-box",
+                                        }}
                                     />
-                                    ))}
-                                </datalist>
+
+                                    <datalist id="pdf-templates-datalist">
+                                        {/* None option if you want */}
+                                        <option value="" label="– None –" />
+                                        {pdfTemplates.map((pt) => (
+                                            <option
+                                                key={pt.id}
+                                                value={`${pt.name} v${pt.version}`}
+                                            />
+                                        ))}
+                                    </datalist>
                                 </div>
                                 <div style={{ marginTop: "2vh", display: "flex", justifyContent: "flex-end" }}>
                                     <Button onPress={() => setIsEditModalVisible(false)}>Cancel</Button>
