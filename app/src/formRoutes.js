@@ -29,6 +29,8 @@ router.post('/forms', async (req, res) => {
         dataSources: fv.dataSources,
         data: fv.elements, // elements array becomes data
         interface: fv.interface,
+        scripts: fv.scripts || [],
+        styles: fv.styles || [],
       };
     } else {
       // Version 1: fields at root level
@@ -43,6 +45,8 @@ router.post('/forms', async (req, res) => {
         dataSources: req.body.dataSources,
         data: req.body.data?.items || req.body.data, // handle data.items or direct data
         interface: req.body.interface,
+        scripts: req.body.scripts || [],
+        styles: req.body.styles || [],
       };
     }
 
@@ -67,6 +71,8 @@ router.post('/forms', async (req, res) => {
       dataSources: formData.dataSources ? JSON.stringify(formData.dataSources) : null,
       data: formData.data ? JSON.stringify(formData.data) : JSON.stringify([]),
       interface: formData.interface ? JSON.stringify(formData.interface) : JSON.stringify([]),
+      scripts: formData.scripts ? JSON.stringify(formData.scripts) : JSON.stringify([]),
+      styles: formData.styles ? JSON.stringify(formData.styles) : JSON.stringify([]),
     });
 
     res.status(201).send({ id: formData.id, message: 'Form template created successfully!' });
@@ -85,7 +91,30 @@ router.get('/forms/:id', async (req, res) => {
     const result = await db('form_templates').where({ id }).first();
 
     if (result) {
-      res.status(200).json(result);
+      // Transform back to original format
+      const response = {
+        formversion: {
+          id: result.id,
+          name: result.title,
+          form_id: result.form_id,
+          version: result.version,
+          status: 'draft',
+          data: {
+            form_id: result.form_id,
+            form_developer: {},
+            comments: '',
+            created_at: result.last_modified,
+            updated_at: result.last_modified
+          },
+          ministry_id: result.ministry_id,
+          dataSources: typeof result.dataSources === 'string' ? JSON.parse(result.dataSources) : result.dataSources,
+          interface: typeof result.interface === 'string' ? JSON.parse(result.interface) : result.interface,
+          scripts: typeof result.scripts === 'string' ? JSON.parse(result.scripts) : (result.scripts || []),
+          styles: typeof result.styles === 'string' ? JSON.parse(result.styles) : (result.styles || []),
+          elements: typeof result.data === 'string' ? JSON.parse(result.data) : result.data
+        }
+      };
+      res.status(200).json(response);
     } else {
       res.status(404).send('Form template not found');
     }
@@ -103,7 +132,7 @@ router.get('/forms/form_id/:form_id', async (req, res) => {
     const result = await db('form_templates')
       .where({ form_id })
       .orderByRaw(`
-        CASE 
+        CASE
           WHEN deployed_to = 'prod' THEN 1
           WHEN deployed_to = 'test' THEN 2
           WHEN deployed_to = 'dev' THEN 3
@@ -114,7 +143,30 @@ router.get('/forms/form_id/:form_id', async (req, res) => {
       .first();
 
     if (result) {
-      res.status(200).json(result);
+      // Transform back to original format
+      const response = {
+        formversion: {
+          id: result.id,
+          name: result.title,
+          form_id: result.form_id,
+          version: result.version,
+          status: 'draft',
+          data: {
+            form_id: result.form_id,
+            form_developer: {},
+            comments: '',
+            created_at: result.last_modified,
+            updated_at: result.last_modified
+          },
+          ministry_id: result.ministry_id,
+          dataSources: typeof result.dataSources === 'string' ? JSON.parse(result.dataSources) : result.dataSources,
+          interface: typeof result.interface === 'string' ? JSON.parse(result.interface) : result.interface,
+          scripts: typeof result.scripts === 'string' ? JSON.parse(result.scripts) : (result.scripts || []),
+          styles: typeof result.styles === 'string' ? JSON.parse(result.styles) : (result.styles || []),
+          elements: typeof result.data === 'string' ? JSON.parse(result.data) : result.data
+        }
+      };
+      res.status(200).json(response);
     } else {
       res.status(404).send('Form template not found');
     }
@@ -127,10 +179,33 @@ router.get('/forms/form_id/:form_id', async (req, res) => {
 // GET request to list all form templates
 router.get('/forms-list', protectedRoute(), async (req, res) => {
   try {
-    const result = await db('form_templates').select('*');
+    const results = await db('form_templates').select('*');
 
-    if (result.length > 0) {
-      res.status(200).json(result);
+    if (results.length > 0) {
+      // Transform each result back to original format
+      const transformedResults = results.map(result => ({
+        formversion: {
+          id: result.id,
+          name: result.title,
+          form_id: result.form_id,
+          version: result.version,
+          status: 'draft',
+          data: {
+            form_id: result.form_id,
+            form_developer: {},
+            comments: '',
+            created_at: result.last_modified,
+            updated_at: result.last_modified
+          },
+          ministry_id: result.ministry_id,
+          dataSources: typeof result.dataSources === 'string' ? JSON.parse(result.dataSources) : result.dataSources,
+          interface: typeof result.interface === 'string' ? JSON.parse(result.interface) : result.interface,
+          scripts: typeof result.scripts === 'string' ? JSON.parse(result.scripts) : (result.scripts || []),
+          styles: typeof result.styles === 'string' ? JSON.parse(result.styles) : (result.styles || []),
+          elements: typeof result.data === 'string' ? JSON.parse(result.data) : result.data
+        }
+      }));
+      res.status(200).json(transformedResults);
     } else {
       res.status(404).send('No form templates found');
     }
