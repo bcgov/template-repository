@@ -12,6 +12,13 @@ const PETS_BASE_URL = process.env.PETS_BASE_URL;
 
 function convertToFormVersion(result) {
   return {
+    id: result.id,
+    title: result.title,
+    form_id: result.form_id,
+    version: result.version,
+    deployed_to: result.deployed_to || '',
+    last_modified: result.last_modified,
+    pdf_template_id: result.pdf_template_id || null,
     formversion: {
       id: result.id,
       name: result.title,
