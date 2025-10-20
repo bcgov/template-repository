@@ -10,6 +10,35 @@ const upload = multer();
 
 const PETS_BASE_URL = process.env.PETS_BASE_URL;
 
+/**
+ * Transform database row to formversion API response format
+ * @param {Object} result - Database row from form_templates table
+ * @returns {Object} Transformed response in formversion format
+ */
+function transformToFormversion(result) {
+  return {
+    formversion: {
+      id: result.id,
+      name: result.title,
+      form_id: result.form_id,
+      version: result.version,
+      status: 'draft',
+      data: {
+        form_id: result.form_id,
+        form_developer: {},
+        comments: '',
+        created_at: result.last_modified,
+        updated_at: result.last_modified
+      },
+      ministry_id: result.ministry_id,
+      dataSources: typeof result.dataSources === 'string' ? JSON.parse(result.dataSources) : result.dataSources,
+      interface: typeof result.interface === 'string' ? JSON.parse(result.interface) : result.interface,
+      scripts: typeof result.scripts === 'string' ? JSON.parse(result.scripts) : (result.scripts || []),
+      styles: typeof result.styles === 'string' ? JSON.parse(result.styles) : (result.styles || []),
+      elements: typeof result.data === 'string' ? JSON.parse(result.data) : result.data
+    }
+  };
+}
 
 // POST request to add a new form template
 router.post('/forms', async (req, res) => {
@@ -91,30 +120,7 @@ router.get('/forms/:id', async (req, res) => {
     const result = await db('form_templates').where({ id }).first();
 
     if (result) {
-      // Transform back to original format
-      const response = {
-        formversion: {
-          id: result.id,
-          name: result.title,
-          form_id: result.form_id,
-          version: result.version,
-          status: 'draft',
-          data: {
-            form_id: result.form_id,
-            form_developer: {},
-            comments: '',
-            created_at: result.last_modified,
-            updated_at: result.last_modified
-          },
-          ministry_id: result.ministry_id,
-          dataSources: typeof result.dataSources === 'string' ? JSON.parse(result.dataSources) : result.dataSources,
-          interface: typeof result.interface === 'string' ? JSON.parse(result.interface) : result.interface,
-          scripts: typeof result.scripts === 'string' ? JSON.parse(result.scripts) : (result.scripts || []),
-          styles: typeof result.styles === 'string' ? JSON.parse(result.styles) : (result.styles || []),
-          elements: typeof result.data === 'string' ? JSON.parse(result.data) : result.data
-        }
-      };
-      res.status(200).json(response);
+      res.status(200).json(transformToFormversion(result));
     } else {
       res.status(404).send('Form template not found');
     }
@@ -143,30 +149,7 @@ router.get('/forms/form_id/:form_id', async (req, res) => {
       .first();
 
     if (result) {
-      // Transform back to original format
-      const response = {
-        formversion: {
-          id: result.id,
-          name: result.title,
-          form_id: result.form_id,
-          version: result.version,
-          status: 'draft',
-          data: {
-            form_id: result.form_id,
-            form_developer: {},
-            comments: '',
-            created_at: result.last_modified,
-            updated_at: result.last_modified
-          },
-          ministry_id: result.ministry_id,
-          dataSources: typeof result.dataSources === 'string' ? JSON.parse(result.dataSources) : result.dataSources,
-          interface: typeof result.interface === 'string' ? JSON.parse(result.interface) : result.interface,
-          scripts: typeof result.scripts === 'string' ? JSON.parse(result.scripts) : (result.scripts || []),
-          styles: typeof result.styles === 'string' ? JSON.parse(result.styles) : (result.styles || []),
-          elements: typeof result.data === 'string' ? JSON.parse(result.data) : result.data
-        }
-      };
-      res.status(200).json(response);
+      res.status(200).json(transformToFormversion(result));
     } else {
       res.status(404).send('Form template not found');
     }
@@ -182,29 +165,7 @@ router.get('/forms-list', protectedRoute(), async (req, res) => {
     const results = await db('form_templates').select('*');
 
     if (results.length > 0) {
-      // Transform each result back to original format
-      const transformedResults = results.map(result => ({
-        formversion: {
-          id: result.id,
-          name: result.title,
-          form_id: result.form_id,
-          version: result.version,
-          status: 'draft',
-          data: {
-            form_id: result.form_id,
-            form_developer: {},
-            comments: '',
-            created_at: result.last_modified,
-            updated_at: result.last_modified
-          },
-          ministry_id: result.ministry_id,
-          dataSources: typeof result.dataSources === 'string' ? JSON.parse(result.dataSources) : result.dataSources,
-          interface: typeof result.interface === 'string' ? JSON.parse(result.interface) : result.interface,
-          scripts: typeof result.scripts === 'string' ? JSON.parse(result.scripts) : (result.scripts || []),
-          styles: typeof result.styles === 'string' ? JSON.parse(result.styles) : (result.styles || []),
-          elements: typeof result.data === 'string' ? JSON.parse(result.data) : result.data
-        }
-      }));
+      const transformedResults = results.map(result => transformToFormversion(result));
       res.status(200).json(transformedResults);
     } else {
       res.status(404).send('No form templates found');
