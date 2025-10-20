@@ -10,12 +10,7 @@ const upload = multer();
 
 const PETS_BASE_URL = process.env.PETS_BASE_URL;
 
-/**
- * Transform database row to formversion API response format
- * @param {Object} result - Database row from form_templates table
- * @returns {Object} Transformed response in formversion format
- */
-function transformToFormversion(result) {
+function convertToFormVersion(result) {
   return {
     formversion: {
       id: result.id,
@@ -120,7 +115,7 @@ router.get('/forms/:id', async (req, res) => {
     const result = await db('form_templates').where({ id }).first();
 
     if (result) {
-      res.status(200).json(transformToFormversion(result));
+      res.status(200).json(convertToFormVersion(result));
     } else {
       res.status(404).send('Form template not found');
     }
@@ -149,7 +144,7 @@ router.get('/forms/form_id/:form_id', async (req, res) => {
       .first();
 
     if (result) {
-      res.status(200).json(transformToFormversion(result));
+      res.status(200).json(convertToFormVersion(result));
     } else {
       res.status(404).send('Form template not found');
     }
@@ -165,7 +160,7 @@ router.get('/forms-list', protectedRoute(), async (req, res) => {
     const results = await db('form_templates').select('*');
 
     if (results.length > 0) {
-      const transformedResults = results.map(result => transformToFormversion(result));
+      const transformedResults = results.map(result => convertToFormVersion(result));
       res.status(200).json(transformedResults);
     } else {
       res.status(404).send('No form templates found');
