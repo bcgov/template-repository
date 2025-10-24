@@ -1,88 +1,157 @@
 # Template Repository
 
- Template repository for the FormFoundry. Allows developers to upload JSON templates and preview them in [Kiln](https://github.com/bcgov/kiln)
+A service for managing form templates in the FormFoundry platform, enabling developers to upload JSON templates and preview them in Kiln.
 
-## Setup Instructions
+## Features
 
-Requirements:
+- Upload and version JSON form templates
+- Manage deployment status (dev/test/prod)
+- Preview templates in Kiln
+- PDF template management via PETS integration
+- Keycloak SSO authentication
 
--   [Docker](https://docs.docker.com/engine/install/)
--   [Pathfinder SSO](https://digital.gov.bc.ca/bcgov-common-components/pathfinder-sso/)
--   [Kiln](https://github.com/bcgov/kiln)
--   [Insomnia](https://insomnia.rest/download) (Or use any REST API Client)
+## Quick Start
 
-Clone the repository:
+**Requirements:**
+- [Docker](https://docs.docker.com/engine/install/)
+- Pathfinder SSO account with 'Developer' role
 
-```
-git clone https://github.com/DavidOkulski/template-repository.git
-```
-
-Navigate into the repository:
-
-```
-cd template-respository
-```
-
----
-
-## Configuration
-
-Copy and rename `.env.example` file to `.env` both in the root:
-
-```
-Copy-Item .env.example .env
+**1. Clone and configure:**
+```bash
+git clone https://github.com/bcgov/template-repository.git
+cd template-repository
+cp .env.example .env
+# Edit .env with your credentials
 ```
 
-Update variables in `.env` file with your credentials and congifurations.
-
-## Docker Deployment
-
-Have Docker installed and running. Run the following commands for local deployment:
-(Windows)
-```
+**2. Start the application:**
+```bash
+# Windows (PowerShell)
 $env:DOCKERFILE="dockerfile-local"; docker-compose up --build
-```
-(Mac/Linux)
-```
+
+# Mac/Linux
 DOCKERFILE=dockerfile-local docker-compose up --build
 ```
 
-Server should be listening on `localhost:3000`
+**3. Access:**
+- Web UI: http://localhost:3000
+- API Health: http://localhost:3000/health
 
-## User Interface
+## Environment Variables
 
-To log into Template Repository, you need to have a valid IDIR, create and assign the 'Developer' role to the IDIR in Pathfinder SSO.
+Key variables to configure in `.env`:
 
-Once logged in you can:
-- Upload form templates
-- View templates that have been uploaded in a tabular format
-- Change the 'Deployment Status' of a template
-- Preview a template in Kiln
+```bash
+# Application
+APP_PORT=3000
 
-## API Calls
+# Database
+POSTGRES_HOST=db
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres
+POSTGRES_DB=form_templates
+POSTGRES_PORT=5432
 
-Ensure your REST API client has SSO authentication configured:
+# Keycloak SSO
+SSO_URL=https://dev.loginproxy.gov.bc.ca/auth
+SSO_REALM=standard
+SSO_CLIENT_ID=your-client-id
+SSO_CLIENT_SECRET=your-client-secret
+SSO_AUTH_SERVER_URL=https://dev.loginproxy.gov.bc.ca/auth/realms/standard/protocol/openid-connect
 
-```
-ACCESS TOKEN URL: 
-CLIENT ID:
-ClIENT SECRET:
-````
+# Frontend URLs
+REACT_APP_SSO_URL=http://localhost:3000
+REACT_APP_KILN_PREVIEW_URL=http://localhost:4173/preview
+REACT_APP_KILN_URL=http://localhost:4173
 
-The API calls for the template repository are as follows:
+# PETS (PDF Export Template Service)
+PETS_BASE_URL=http://your-pets-service
 ```
-// POST request to add a new form template
-localhost:3000/api/forms
+
+## Database
+
+**Run migrations:**
+```bash
+cd app/src
+npx knex migrate:latest --knexfile knexfile.js
 ```
+
+**Schema:**
+- `form_templates` - Form JSON definitions, versions, and deployment status
+- `pdf_templates` - PDF template references for PETS service
+
+## API Endpoints
+
+All `/api/*` endpoints require authentication except where noted.
+
+### Form Templates
+```bash
+# Create form template
+POST /api/forms
+Body: { version, ministry_id, title, form_id, data, deployed_to, ... }
+
+# Get form by UUID (public)
+GET /api/forms/:id
+
+# Get form by form_id (public, returns highest priority deployment)
+GET /api/forms/form_id/:form_id
+
+# List all forms
+GET /api/forms-list
+
+# Update deployment status
+PUT /api/forms/update
+Body: { form_id, id, deployed_to, pdf_template_id }
 ```
-// GET request to retrieve a form template by UUID
-localhost:3000/api/forms/{uuid}
+
+### PDF Templates
+```bash
+# List all PDF templates
+GET /api/pdf-templates-list
+
+# Upload new PDF template (ODT/DOCX)
+POST /api/newPETStemplate
+Form-data: { pdf_template_name, pdf_template_version, pdf_template_notes, libre_office_template }
+
+# Download template file
+GET /api/template/:template_uuid
+
+# Render PDF
+POST /api/pdfRender/:id
+Body: { data: {...} }
 ```
+
+## Development
+
+**Backend (Express API):**
+```bash
+cd app/src
+npm install
+npm run dev    # Development with nodemon
+npm start      # Production
 ```
-// GET request to retrieve the form template by id with the latest version
-http://localhost:3000/api/forms/form_id/{form_id}
+
+**Frontend (React):**
+```bash
+cd app/client
+npm install
+npm start      # Dev server on port 3000
+npm run build  # Production build
 ```
+
+**Database access:**
+```bash
+# Via Docker
+docker exec -it template-repository-db-1 psql -U postgres -d form_templates
+
+# Via PgAdmin
+Host: localhost, Port: 5432, User: postgres, Password: postgres, Database: form_templates
 ```
-// GET request to list all form templates 
-http://localhost:3000/api/forms-list
-```
+
+## Authentication
+
+Access requires:
+1. Valid IDIR account
+2. 'Developer' role assigned in Pathfinder SSO
+
+Login redirects to Keycloak SSO configured in environment variables.
