@@ -5,6 +5,12 @@ const { protectedRoute } = require('@bcgov/citz-imb-sso-express');
 const multer = require('multer');
 const FormData = require('form-data');
 const { v4: uuidv4 } = require('uuid');
+const {
+  TABLE_NAMES,
+  DEPLOYMENT_STATUS,
+  DEPLOYMENT_PRIORITY,
+  HTTP_STATUS,
+} = require('./constants');
 
 const upload = multer();
 
@@ -25,7 +31,7 @@ router.post('/forms', async (req, res) => {
         last_modified: fv.data?.updated_at || fv.data?.created_at,
         title: fv.name,
         form_id: fv.form_id,
-        deployed_to: fv.deployed_to || '',
+        deployed_to: fv.deployed_to || DEPLOYMENT_STATUS.NONE,
         dataSources: fv.dataSources,
         data: fv.elements, // elements array becomes data
         interface: fv.interface,
@@ -39,7 +45,7 @@ router.post('/forms', async (req, res) => {
         last_modified: req.body.lastModified || req.body.last_modified,
         title: req.body.title,
         form_id: req.body.form_id,
-        deployed_to: req.body.deployed_to || '',
+        deployed_to: req.body.deployed_to || DEPLOYMENT_STATUS.NONE,
         dataSources: req.body.dataSources,
         data: req.body.data?.items || req.body.data, // handle data.items or direct data
         interface: req.body.interface,
@@ -50,13 +56,13 @@ router.post('/forms', async (req, res) => {
       formData.id = uuidv4();
     }
 
-    const existingForm = await db('form_templates').where({ id: formData.id }).first();
+    const existingForm = await db(TABLE_NAMES.FORM_TEMPLATES).where({ id: formData.id }).first();
 
     if (existingForm) {
-      return res.status(409).send({ id: formData.id, message: 'Form template already exists' });
+      return res.status(HTTP_STATUS.CONFLICT).send({ id: formData.id, message: 'Form template already exists' });
     }
 
-    await db('form_templates').insert({
+    await db(TABLE_NAMES.FORM_TEMPLATES).insert({
       id: formData.id,
       version: formData.version,
       ministry_id: formData.ministry_id,
@@ -69,11 +75,11 @@ router.post('/forms', async (req, res) => {
       interface: formData.interface ? JSON.stringify(formData.interface) : JSON.stringify([]),
     });
 
-    res.status(201).send({ id: formData.id, message: 'Form template created successfully!' });
+    res.status(HTTP_STATUS.CREATED).send({ id: formData.id, message: 'Form template created successfully!' });
 
   } catch (err) {
     console.error(err);
-    res.status(500).send('Error creating form template');
+    res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).send('Error creating form template');
   }
 });
 
@@ -82,16 +88,16 @@ router.get('/forms/:id', async (req, res) => {
   const { id } = req.params;
 
   try {
-    const result = await db('form_templates').where({ id }).first();
+    const result = await db(TABLE_NAMES.FORM_TEMPLATES).where({ id }).first();
 
     if (result) {
-      res.status(200).json(result);
+      res.status(HTTP_STATUS.OK).json(result);
     } else {
-      res.status(404).send('Form template not found');
+      res.status(HTTP_STATUS.NOT_FOUND).send('Form template not found');
     }
   } catch (err) {
     console.error(err);
-    res.status(500).send('Error retrieving form template');
+    res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).send('Error retrieving form template');
   }
 });
 
@@ -100,87 +106,87 @@ router.get('/forms/form_id/:form_id', async (req, res) => {
   const { form_id } = req.params;
 
   try {
-    const result = await db('form_templates')
+    const result = await db(TABLE_NAMES.FORM_TEMPLATES)
       .where({ form_id })
       .orderByRaw(`
-        CASE 
-          WHEN deployed_to = 'prod' THEN 1
-          WHEN deployed_to = 'test' THEN 2
-          WHEN deployed_to = 'dev' THEN 3
-          ELSE 4
+        CASE
+          WHEN deployed_to = '${DEPLOYMENT_STATUS.PROD}' THEN ${DEPLOYMENT_PRIORITY[DEPLOYMENT_STATUS.PROD]}
+          WHEN deployed_to = '${DEPLOYMENT_STATUS.TEST}' THEN ${DEPLOYMENT_PRIORITY[DEPLOYMENT_STATUS.TEST]}
+          WHEN deployed_to = '${DEPLOYMENT_STATUS.DEV}' THEN ${DEPLOYMENT_PRIORITY[DEPLOYMENT_STATUS.DEV]}
+          ELSE ${DEPLOYMENT_PRIORITY[DEPLOYMENT_STATUS.NONE]}
         END,
         CAST(version AS INTEGER) DESC
       `)
       .first();
 
     if (result) {
-      res.status(200).json(result);
+      res.status(HTTP_STATUS.OK).json(result);
     } else {
-      res.status(404).send('Form template not found');
+      res.status(HTTP_STATUS.NOT_FOUND).send('Form template not found');
     }
   } catch (err) {
     console.error('Error retrieving form template:', err);
-    res.status(500).send('Error retrieving form template');
+    res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).send('Error retrieving form template');
   }
 });
 
 // GET request to list all form templates
 router.get('/forms-list', protectedRoute(), async (req, res) => {
   try {
-    const result = await db('form_templates').select('*');
+    const result = await db(TABLE_NAMES.FORM_TEMPLATES).select('*');
 
     if (result.length > 0) {
-      res.status(200).json(result);
+      res.status(HTTP_STATUS.OK).json(result);
     } else {
-      res.status(404).send('No form templates found');
+      res.status(HTTP_STATUS.NOT_FOUND).send('No form templates found');
     }
   } catch (err) {
     console.error(err);
-    res.status(500).send('Error retrieving form templates');
+    res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).send('Error retrieving form templates');
   }
 });
 
 // GET request to list all pdf templates
 router.get('/pdf-templates-list', protectedRoute(), async (req, res) => {
   try {
-    const result = await db('pdf_templates').select('*');
+    const result = await db(TABLE_NAMES.PDF_TEMPLATES).select('*');
 
     if (result.length > 0) {
-      res.status(200).json(result);
+      res.status(HTTP_STATUS.OK).json(result);
     } else {
-      res.status(404).send('No pdf templates found');
+      res.status(HTTP_STATUS.NOT_FOUND).send('No pdf templates found');
     }
   } catch (err) {
     console.error(err);
-    res.status(500).send('Error retrieving pdf templates');
+    res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).send('Error retrieving pdf templates');
   }
 });
 
 // PUT request to update the deployed status of a form
 router.put('/forms/update', protectedRoute(), async (req, res) => {
-  const { form_id, id, deployed_to,pdf_template_id } = req.body;
+  const { form_id, id, deployed_to, pdf_template_id } = req.body;
 
   try {
     // Clear deployed_to for other forms with the same form_id
-    await db('form_templates')
+    await db(TABLE_NAMES.FORM_TEMPLATES)
       .where({ form_id })
       .andWhereNot({ id })
       .andWhere({ deployed_to })
-      .update({ deployed_to: "" });
+      .update({ deployed_to: DEPLOYMENT_STATUS.NONE });
 
     // Update the deployed_to status for the specified form
-    const result = await db('form_templates')
+    const result = await db(TABLE_NAMES.FORM_TEMPLATES)
       .where({ id })
       .update({ deployed_to, pdf_template_id });
 
     if (result > 0) {
-      res.status(200).send({ id, message: 'Form version updated successfully!' });
+      res.status(HTTP_STATUS.OK).send({ id, message: 'Form version updated successfully!' });
     } else {
-      res.status(404).send('Form template not found');
+      res.status(HTTP_STATUS.NOT_FOUND).send('Form template not found');
     }
   } catch (err) {
     console.error(err);
-    res.status(500).send('Error updating deployed status');
+    res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).send('Error updating deployed status');
   }
 });
 
@@ -194,7 +200,7 @@ router.post('/newPETStemplate', protectedRoute(), upload.single('libre_office_te
       const file = req.file;
       if (!file || !pdf_template_name || !pdf_template_version) {
         return res
-          .status(400)
+          .status(HTTP_STATUS.BAD_REQUEST)
           .send('name, version and template file are all required');
       }
 
@@ -217,7 +223,7 @@ router.post('/newPETStemplate', protectedRoute(), upload.single('libre_office_te
 
       // 2) insert into pdf_templates
       const id = uuidv4();
-      await db('pdf_templates').insert({
+      await db(TABLE_NAMES.PDF_TEMPLATES).insert({
         id,
         name: pdf_template_name,
         version: pdf_template_version,
@@ -226,11 +232,11 @@ router.post('/newPETStemplate', protectedRoute(), upload.single('libre_office_te
       });
 
       return res
-        .status(201)
+        .status(HTTP_STATUS.CREATED)
         .json({ id, message: 'PDF template saved successfully' });
     } catch (err) {
       console.error(err);
-      return res.status(500).json({ error: err.message });
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: err.message });
     }
   }
 );
@@ -243,7 +249,7 @@ router.get('/template/:template_uuid', protectedRoute(), async (req, res) => {
     const petsRes = await fetch(petsUrl);
 
     if (!petsRes.ok) {
-      return res.status(petsRes.status).send(`PETS returned ${petsRes.status}`);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).send(`PETS returned ${petsRes.status}`);
     }
 
     const contentType = petsRes.headers.get('content-type') || 'application/octet-stream';
@@ -262,7 +268,7 @@ router.get('/template/:template_uuid', protectedRoute(), async (req, res) => {
     petsRes.body.pipe(res);
   } catch (err) {
     console.error('Error proxying template download:', err);
-    res.status(500).send('Internal error fetching template');
+    res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).send('Internal error fetching template');
   }
 });
 
@@ -271,13 +277,13 @@ router.post('/pdfRender/:id', protectedRoute(), async (req, res) => {
     const { id } = req.params;
 
     // 2) look up the real template_uuid in your table
-    const row = await db('pdf_templates')
+    const row = await db(TABLE_NAMES.PDF_TEMPLATES)
                       .select('template_uuid')
                       .where({ id })
                       .first();
 
     if (!row) {
-      return res.status(404).send('PDF template not found');
+      return res.status(HTTP_STATUS.NOT_FOUND).send('PDF template not found');
     }
 
     const realUuid = row.template_uuid;
@@ -305,7 +311,7 @@ router.post('/pdfRender/:id', protectedRoute(), async (req, res) => {
     });
 
     if (!petsRes.ok) {
-      return res.status(petsRes.status).send(`PETS returned ${petsRes.status}`);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).send(`PETS returned ${petsRes.status}`);
     }
 
     const contentType = petsRes.headers.get('content-type') || 'application/octet-stream';
@@ -324,7 +330,7 @@ router.post('/pdfRender/:id', protectedRoute(), async (req, res) => {
     petsRes.body.pipe(res);
   } catch (err) {
     console.error('Error proxying template download:', err);
-    res.status(500).send('Internal error fetching template');
+    res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).send('Internal error fetching template');
   }
 });
 

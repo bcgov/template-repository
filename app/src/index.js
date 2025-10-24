@@ -6,6 +6,7 @@ const path = require('path');
 const formRoutes = require('./formRoutes');
 const { protectedRoute } = require('@bcgov/citz-imb-sso-express');
 const { sso } = require('@bcgov/citz-imb-sso-express');
+const { HTTP_STATUS } = require('./constants');
 
 const app = express();
 const port = process.env.APP_PORT;
@@ -27,7 +28,7 @@ sso(app, {
 app.use(express.json());
 
 app.get('/health', (_req, res) => {
-  res.sendStatus(200);
+  res.sendStatus(HTTP_STATUS.OK);
 });
 
 app.use('/api', protectedRoute(), formRoutes);
