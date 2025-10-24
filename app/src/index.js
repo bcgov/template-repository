@@ -3,7 +3,7 @@ require('dotenv').config();
 const fetch = require('node-fetch');
 const express = require('express');
 const path = require('path');
-const formRoutes = require('./formRoutes');
+const formRoutes = require('./routes/formRoutes');
 const { protectedRoute } = require('@bcgov/citz-imb-sso-express');
 const { sso } = require('@bcgov/citz-imb-sso-express');
 const { HTTP_STATUS } = require('./constants');
