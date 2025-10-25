@@ -26,8 +26,6 @@ sso(app, {
   },
 });
 
-app.use(express.json());
-
 app.get('/health', (_req, res) => {
   res.sendStatus(HTTP_STATUS.OK);
 });
