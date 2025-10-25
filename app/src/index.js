@@ -26,18 +26,18 @@ sso(app, {
   },
 });
 
-app.get('/health', (_req, res) => {
-  res.sendStatus(HTTP_STATUS.OK);
-});
-
-app.use('/api', protectedRoute(), formRoutes);
-
 app.use((req, res, next) => {
   if (!(req.method === 'GET' && req.path === '/health')) {
     console.log(`Incoming request: ${req.method} ${req.url}`);
   }
   next();
 });
+
+app.get('/health', (_req, res) => {
+  res.sendStatus(HTTP_STATUS.OK);
+});
+
+app.use('/api', protectedRoute(), formRoutes);
 
 app.use(express.static(path.join(__dirname, '../client/build')));
 
