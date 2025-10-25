@@ -1,8 +1,3 @@
-/**
- * Form Routes
- * API route definitions for form and PDF template operations
- */
-
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
@@ -12,14 +7,12 @@ const pdfController = require('../controllers/pdfController');
 
 const upload = multer();
 
-// Form template routes
 router.post('/forms', formController.createForm);
 router.get('/forms/:id', formController.getFormById);
 router.get('/forms/form_id/:form_id', formController.getFormByFormId);
 router.get('/forms-list', protectedRoute(), formController.getAllForms);
 router.put('/forms/update', protectedRoute(), formController.updateFormDeployment);
 
-// PDF template routes
 router.get('/pdf-templates-list', protectedRoute(), pdfController.getAllPdfTemplates);
 router.post(
   '/newPETStemplate',

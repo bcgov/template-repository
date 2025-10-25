@@ -1,20 +1,8 @@
-/**
- * Application Constants
- * Centralized location for all configuration values used throughout the application.
- */
-
-/**
- * Database table names
- */
 const TABLE_NAMES = {
   FORM_TEMPLATES: 'form_templates',
   PDF_TEMPLATES: 'pdf_templates',
 };
 
-/**
- * Deployment environment statuses
- * Priority order: PROD > TEST > DEV
- */
 const DEPLOYMENT_STATUS = {
   PROD: 'prod',
   TEST: 'test',
@@ -22,10 +10,7 @@ const DEPLOYMENT_STATUS = {
   NONE: '',
 };
 
-/**
- * Deployment priority for sorting/filtering
- * Lower number = higher priority
- */
+// Lower number = higher priority
 const DEPLOYMENT_PRIORITY = {
   [DEPLOYMENT_STATUS.PROD]: 1,
   [DEPLOYMENT_STATUS.TEST]: 2,
@@ -33,9 +18,6 @@ const DEPLOYMENT_PRIORITY = {
   [DEPLOYMENT_STATUS.NONE]: 4,
 };
 
-/**
- * HTTP status codes
- */
 const HTTP_STATUS = {
   OK: 200,
   CREATED: 201,
@@ -45,9 +27,6 @@ const HTTP_STATUS = {
   INTERNAL_SERVER_ERROR: 500,
 };
 
-/**
- * API routes
- */
 const API_ROUTES = {
   HEALTH: '/health',
   FORMS: '/api/forms',

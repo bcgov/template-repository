@@ -1,16 +1,7 @@
-/**
- * Form Controller
- * Handles HTTP requests/responses for form template operations
- */
-
 const formService = require('../services/formService');
 const { HTTP_STATUS } = require('../constants');
 
-/**
- * POST /api/forms
- * Create a new form template
- */
-const createForm = async (req, res) => {
+const createForm = async (req, res, next) => {
   try {
     const formData = formService.normalizeFormData(req.body);
     const result = await formService.createForm(formData);
@@ -20,24 +11,18 @@ const createForm = async (req, res) => {
       message: 'Form template created successfully!',
     });
   } catch (err) {
-    console.error(err);
-
-    if (err.statusCode === 409) {
-      return res.status(HTTP_STATUS.CONFLICT).send({
-        id: err.data?.id,
-        message: err.message,
-      });
+    if (!err.statusCode) {
+      err.statusCode = HTTP_STATUS.INTERNAL_SERVER_ERROR;
+      err.message = 'Error creating form template';
     }
-
-    res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).send('Error creating form template');
+    if (err.statusCode === HTTP_STATUS.CONFLICT) {
+      err.details = { id: err.data?.id };
+    }
+    next(err);
   }
 };
 
-/**
- * GET /api/forms/:id
- * Get form template by UUID
- */
-const getFormById = async (req, res) => {
+const getFormById = async (req, res, next) => {
   try {
     const { id } = req.params;
     const result = await formService.getFormById(id);
@@ -45,19 +30,16 @@ const getFormById = async (req, res) => {
     if (result) {
       res.status(HTTP_STATUS.OK).json(result);
     } else {
-      res.status(HTTP_STATUS.NOT_FOUND).send('Form template not found');
+      const error = new Error('Form template not found');
+      error.statusCode = HTTP_STATUS.NOT_FOUND;
+      throw error;
     }
   } catch (err) {
-    console.error(err);
-    res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).send('Error retrieving form template');
+    next(err);
   }
 };
 
-/**
- * GET /api/forms/form_id/:form_id
- * Get form template by form_id with deployment priority
- */
-const getFormByFormId = async (req, res) => {
+const getFormByFormId = async (req, res, next) => {
   try {
     const { form_id } = req.params;
     const result = await formService.getFormByFormId(form_id);
@@ -65,38 +47,32 @@ const getFormByFormId = async (req, res) => {
     if (result) {
       res.status(HTTP_STATUS.OK).json(result);
     } else {
-      res.status(HTTP_STATUS.NOT_FOUND).send('Form template not found');
+      const error = new Error('Form template not found');
+      error.statusCode = HTTP_STATUS.NOT_FOUND;
+      throw error;
     }
   } catch (err) {
-    console.error('Error retrieving form template:', err);
-    res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).send('Error retrieving form template');
+    next(err);
   }
 };
 
-/**
- * GET /api/forms-list
- * Get all form templates
- */
-const getAllForms = async (req, res) => {
+const getAllForms = async (req, res, next) => {
   try {
     const result = await formService.getAllForms();
 
     if (result.length > 0) {
       res.status(HTTP_STATUS.OK).json(result);
     } else {
-      res.status(HTTP_STATUS.NOT_FOUND).send('No form templates found');
+      const error = new Error('No form templates found');
+      error.statusCode = HTTP_STATUS.NOT_FOUND;
+      throw error;
     }
   } catch (err) {
-    console.error(err);
-    res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).send('Error retrieving form templates');
+    next(err);
   }
 };
 
-/**
- * PUT /api/forms/update
- * Update form deployment status
- */
-const updateFormDeployment = async (req, res) => {
+const updateFormDeployment = async (req, res, next) => {
   try {
     const { form_id, id, deployed_to, pdf_template_id } = req.body;
 
@@ -113,11 +89,12 @@ const updateFormDeployment = async (req, res) => {
         message: 'Form version updated successfully!',
       });
     } else {
-      res.status(HTTP_STATUS.NOT_FOUND).send('Form template not found');
+      const error = new Error('Form template not found');
+      error.statusCode = HTTP_STATUS.NOT_FOUND;
+      throw error;
     }
   } catch (err) {
-    console.error(err);
-    res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).send('Error updating deployed status');
+    next(err);
   }
 };
 

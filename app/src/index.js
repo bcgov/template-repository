@@ -7,6 +7,7 @@ const formRoutes = require('./routes/formRoutes');
 const { protectedRoute } = require('@bcgov/citz-imb-sso-express');
 const { sso } = require('@bcgov/citz-imb-sso-express');
 const { HTTP_STATUS } = require('./constants');
+const { errorHandler } = require('./middleware/errorHandler');
 
 const app = express();
 const port = process.env.APP_PORT;
@@ -45,6 +46,8 @@ app.use(express.static(path.join(__dirname, '../client/build')));
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../client/build', 'index.html'));
 });
+
+app.use(errorHandler);
 
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);
