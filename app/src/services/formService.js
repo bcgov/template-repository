@@ -19,6 +19,8 @@ const normalizeFormData = (body) => {
       dataSources: fv.dataSources,
       data: fv.elements,
       interface: fv.interface,
+      scripts: fv.scripts,
+      styles: fv.styles,
     };
   } else {
     formData = {
@@ -32,6 +34,8 @@ const normalizeFormData = (body) => {
       dataSources: body.dataSources,
       data: body.data?.items || body.data,
       interface: body.interface,
+      scripts: body.scripts,
+      styles: body.styles,
     };
   }
 
@@ -43,31 +47,69 @@ const normalizeFormData = (body) => {
 };
 
 const createForm = async (formData) => {
-  const existingForm = await db(TABLE_NAMES.FORM_TEMPLATES)
-    .where({ id: formData.id })
-    .first();
+  try {
+    const existingForm = await db(TABLE_NAMES.FORM_TEMPLATES)
+      .where({ id: formData.id })
+      .first();
 
-  if (existingForm) {
-    const error = new Error('Form template already exists');
-    error.statusCode = 409;
-    error.data = { id: formData.id };
+    if (existingForm) {
+      const error = new Error(`Form template already exists with id: ${formData.id}, form_id: ${existingForm.form_id}, version: ${existingForm.version}`);
+      error.statusCode = 409;
+      error.data = {
+        id: formData.id,
+        existing: {
+          form_id: existingForm.form_id,
+          version: existingForm.version,
+          title: existingForm.title
+        }
+      };
+      throw error;
+    }
+
+    await db(TABLE_NAMES.FORM_TEMPLATES).insert({
+      id: formData.id,
+      version: formData.version,
+      ministry_id: formData.ministry_id,
+      last_modified: formData.last_modified,
+      title: formData.title,
+      form_id: formData.form_id,
+      deployed_to: formData.deployed_to,
+      dataSources: formData.dataSources ? JSON.stringify(formData.dataSources) : null,
+      data: formData.data ? JSON.stringify(formData.data) : JSON.stringify([]),
+      interface: formData.interface ? JSON.stringify(formData.interface) : JSON.stringify([]),
+      scripts: formData.scripts ? JSON.stringify(formData.scripts) : null,
+      styles: formData.styles ? JSON.stringify(formData.styles) : null,
+    });
+
+    return { id: formData.id };
+  } catch (error) {
+    // Add context to database errors
+    if (!error.statusCode && error.code) {
+      console.error('[Database Error in createForm]', {
+        code: error.code,
+        detail: error.detail,
+        constraint: error.constraint,
+        formData: {
+          id: formData.id,
+          form_id: formData.form_id,
+          version: formData.version,
+          title: formData.title,
+        },
+      });
+
+      if (error.code === '23505') {
+        error.message = `Duplicate entry: ${error.detail || 'Form already exists'}`;
+        error.statusCode = 409;
+      } else if (error.code === '23502') {
+        error.message = `Missing required field: ${error.column || 'unknown'}`;
+        error.statusCode = 400;
+      } else {
+        error.message = `Database error: ${error.message}`;
+        error.statusCode = 500;
+      }
+    }
     throw error;
   }
-
-  await db(TABLE_NAMES.FORM_TEMPLATES).insert({
-    id: formData.id,
-    version: formData.version,
-    ministry_id: formData.ministry_id,
-    last_modified: formData.last_modified,
-    title: formData.title,
-    form_id: formData.form_id,
-    deployed_to: formData.deployed_to,
-    dataSources: formData.dataSources ? JSON.stringify(formData.dataSources) : null,
-    data: formData.data ? JSON.stringify(formData.data) : JSON.stringify([]),
-    interface: formData.interface ? JSON.stringify(formData.interface) : JSON.stringify([]),
-  });
-
-  return { id: formData.id };
 };
 
 const getFormById = async (id) => {

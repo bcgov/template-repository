@@ -118,8 +118,16 @@ const FormList = () => {
                 headers: { "Content-Type": "application/json", "Authorization": getAuthorizationHeaderValue() },
                 body: inputText,
             });
+
             if (!uploadResponse.ok) {
-                throw new Error(`Failed to upload template: ${uploadResponse.status} – ${uploadResponse.statusText}`);
+                const errorData = await uploadResponse.json().catch(() => ({}));
+                console.error('[Form Upload Error]', {
+                    status: uploadResponse.status,
+                    statusText: uploadResponse.statusText,
+                    errorData,
+                    payload: inputText.substring(0, 200) + '...',
+                });
+                throw new Error(errorData.message || `Upload failed: ${uploadResponse.status} ${uploadResponse.statusText}`);
             }
 
             const parsedJson = JSON.parse(inputText);
@@ -149,8 +157,18 @@ const FormList = () => {
                         pdf_template_id: null
                     }),
                 });
+
                 if (!updateResponse.ok) {
-                    throw new Error(`Failed to update template: ${updateResponse.status} – ${updateResponse.statusText}`);
+                    const errorData = await updateResponse.json().catch(() => ({}));
+                    console.error('[Form Update Error]', {
+                        status: updateResponse.status,
+                        statusText: updateResponse.statusText,
+                        errorData,
+                        formId,
+                        formUuid,
+                        deployedTo,
+                    });
+                    throw new Error(errorData.message || `Update failed: ${updateResponse.status} ${updateResponse.statusText}`);
                 }
             }
 
@@ -159,7 +177,10 @@ const FormList = () => {
             setErrorModal("");
             setModalVisible(false);
         } catch (err) {
-            console.error("Error uploading form:", err);
+            console.error('[Form Upload Handler Error]', {
+                error: err.message,
+                stack: err.stack,
+            });
             setErrorModal(err.message);
         }
     };
@@ -445,7 +466,7 @@ const FormList = () => {
                 </Button>
             </Header>
             <Modal isOpen={modalVisible} onOpenChange={setModalVisible}>
-                <Dialog isCloseable role="dialog">
+                <Dialog isCloseable role="dialog" aria-label="Upload Form Template">
                     <div className="dialog-container"
                          style={{
                              padding: "1rem",
@@ -465,6 +486,7 @@ const FormList = () => {
                                 ↻
                             </Button>
                             <TextField
+                                label="Template UUID"
                                 value={templateUuid}
                                 onChange={(val) => setTemplateUuid(val)}
                                 style={{
@@ -497,6 +519,7 @@ const FormList = () => {
                             </Button>
                         </div>
                         <TextArea
+                            label="Form Template JSON"
                             placeholder="Paste Form Template JSON here..."
                             value={inputText}
                             onChange={(value) => setInputText(value)}
@@ -514,7 +537,7 @@ const FormList = () => {
             </Modal>
             {selectedJson && (
                 <Modal isOpen={!!selectedJson} onOpenChange={() => setSelectedJson(null)}>  {/*Modal for Uploading JSON*/}
-                    <Dialog isCloseable>
+                    <Dialog isCloseable aria-label="JSON Preview">
                         <div style={{ height: "91vh", padding: "1vh" }}>
                             <h2>JSON Preview</h2>
                             <pre style={{ overflow: "auto", maxHeight: "75vh" }}>
@@ -538,7 +561,7 @@ const FormList = () => {
             ) : (
                 <><MaterialReactTable table={table} />
                     <Modal isOpen={isEditModalVisible} onOpenChange={setIsEditModalVisible} title="Change Deployment Status"> {/*Modal for Changing Deployement Status*/}
-                        <Dialog isCloseable>
+                        <Dialog isCloseable aria-label="Edit Deployment Status">
                             <div style={{ padding: "16px" }}>
                                 <h3>Edit Deployment Status</h3>
                                 <select
