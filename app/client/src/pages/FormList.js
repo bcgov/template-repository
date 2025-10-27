@@ -118,8 +118,16 @@ const FormList = () => {
                 headers: { "Content-Type": "application/json", "Authorization": getAuthorizationHeaderValue() },
                 body: inputText,
             });
+
             if (!uploadResponse.ok) {
-                throw new Error(`Failed to upload template: ${uploadResponse.status} – ${uploadResponse.statusText}`);
+                const errorData = await uploadResponse.json().catch(() => ({}));
+                console.error('[Form Upload Error]', {
+                    status: uploadResponse.status,
+                    statusText: uploadResponse.statusText,
+                    errorData,
+                    payload: inputText.substring(0, 200) + '...',
+                });
+                throw new Error(errorData.message || `Upload failed: ${uploadResponse.status} ${uploadResponse.statusText}`);
             }
 
             const parsedJson = JSON.parse(inputText);
@@ -149,8 +157,18 @@ const FormList = () => {
                         pdf_template_id: null
                     }),
                 });
+
                 if (!updateResponse.ok) {
-                    throw new Error(`Failed to update template: ${updateResponse.status} – ${updateResponse.statusText}`);
+                    const errorData = await updateResponse.json().catch(() => ({}));
+                    console.error('[Form Update Error]', {
+                        status: updateResponse.status,
+                        statusText: updateResponse.statusText,
+                        errorData,
+                        formId,
+                        formUuid,
+                        deployedTo,
+                    });
+                    throw new Error(errorData.message || `Update failed: ${updateResponse.status} ${updateResponse.statusText}`);
                 }
             }
 
@@ -159,7 +177,10 @@ const FormList = () => {
             setErrorModal("");
             setModalVisible(false);
         } catch (err) {
-            console.error("Error uploading form:", err);
+            console.error('[Form Upload Handler Error]', {
+                error: err.message,
+                stack: err.stack,
+            });
             setErrorModal(err.message);
         }
     };

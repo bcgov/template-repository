@@ -11,12 +11,25 @@ const createForm = async (req, res, next) => {
       message: 'Form template created successfully!',
     });
   } catch (err) {
+    // Log detailed error information for debugging
+    console.error('[createForm Error]', {
+      message: err.message,
+      statusCode: err.statusCode,
+      data: err.data,
+      stack: err.stack,
+      requestBody: {
+        hasFormversion: !!req.body?.formversion,
+        form_id: req.body?.formversion?.form_id || req.body?.form_id,
+        version: req.body?.formversion?.version || req.body?.version,
+        id: req.body?.formversion?.id || req.body?.id,
+      }
+    });
+
     if (!err.statusCode) {
       err.statusCode = HTTP_STATUS.INTERNAL_SERVER_ERROR;
-      err.message = 'Error creating form template';
     }
     if (err.statusCode === HTTP_STATUS.CONFLICT) {
-      err.details = { id: err.data?.id };
+      err.details = err.data;
     }
     next(err);
   }
