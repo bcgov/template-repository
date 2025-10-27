@@ -59,14 +59,7 @@ const getFormByFormId = async (req, res, next) => {
 const getAllForms = async (req, res, next) => {
   try {
     const result = await formService.getAllForms();
-
-    if (result.length > 0) {
-      res.status(HTTP_STATUS.OK).json(result);
-    } else {
-      const error = new Error('No form templates found');
-      error.statusCode = HTTP_STATUS.NOT_FOUND;
-      throw error;
-    }
+    res.status(HTTP_STATUS.OK).json(result);
   } catch (err) {
     next(err);
   }

@@ -4,14 +4,7 @@ const { HTTP_STATUS } = require('../constants');
 const getAllPdfTemplates = async (req, res, next) => {
   try {
     const result = await pdfService.getAllPdfTemplates();
-
-    if (result.length > 0) {
-      res.status(HTTP_STATUS.OK).json(result);
-    } else {
-      const error = new Error('No pdf templates found');
-      error.statusCode = HTTP_STATUS.NOT_FOUND;
-      throw error;
-    }
+    res.status(HTTP_STATUS.OK).json(result);
   } catch (err) {
     next(err);
   }

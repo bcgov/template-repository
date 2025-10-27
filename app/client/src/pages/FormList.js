@@ -445,7 +445,7 @@ const FormList = () => {
                 </Button>
             </Header>
             <Modal isOpen={modalVisible} onOpenChange={setModalVisible}>
-                <Dialog isCloseable role="dialog">
+                <Dialog isCloseable role="dialog" aria-label="Upload Form Template">
                     <div className="dialog-container"
                          style={{
                              padding: "1rem",
@@ -465,6 +465,7 @@ const FormList = () => {
                                 ↻
                             </Button>
                             <TextField
+                                label="Template UUID"
                                 value={templateUuid}
                                 onChange={(val) => setTemplateUuid(val)}
                                 style={{
@@ -497,6 +498,7 @@ const FormList = () => {
                             </Button>
                         </div>
                         <TextArea
+                            label="Form Template JSON"
                             placeholder="Paste Form Template JSON here..."
                             value={inputText}
                             onChange={(value) => setInputText(value)}
@@ -514,7 +516,7 @@ const FormList = () => {
             </Modal>
             {selectedJson && (
                 <Modal isOpen={!!selectedJson} onOpenChange={() => setSelectedJson(null)}>  {/*Modal for Uploading JSON*/}
-                    <Dialog isCloseable>
+                    <Dialog isCloseable aria-label="JSON Preview">
                         <div style={{ height: "91vh", padding: "1vh" }}>
                             <h2>JSON Preview</h2>
                             <pre style={{ overflow: "auto", maxHeight: "75vh" }}>
@@ -538,7 +540,7 @@ const FormList = () => {
             ) : (
                 <><MaterialReactTable table={table} />
                     <Modal isOpen={isEditModalVisible} onOpenChange={setIsEditModalVisible} title="Change Deployment Status"> {/*Modal for Changing Deployement Status*/}
-                        <Dialog isCloseable>
+                        <Dialog isCloseable aria-label="Edit Deployment Status">
                             <div style={{ padding: "16px" }}>
                                 <h3>Edit Deployment Status</h3>
                                 <select
