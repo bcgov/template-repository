@@ -10,6 +10,13 @@ A service for managing form templates in the FormFoundry platform, enabling deve
 - PDF template management via PETS integration
 - Keycloak SSO authentication
 
+## Prerequisites
+
+-   [Docker](https://docs.docker.com/engine/install/)
+-   [Pathfinder SSO](https://digital.gov.bc.ca/bcgov-common-components/pathfinder-sso/)
+-   [Kiln](https://github.com/bcgov/kiln)
+-   [Insomnia](https://insomnia.rest/download) (Or use any REST API Client)
+
 ## Quick Start
 
 **Requirements:**
