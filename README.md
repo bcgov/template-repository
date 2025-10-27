@@ -162,3 +162,13 @@ Access requires:
 2. 'Developer' role assigned in Pathfinder SSO
 
 Login redirects to Keycloak SSO configured in environment variables.
+
+## User Interface
+
+To log into Template Repository, you need to have a valid IDIR, create and assign the 'Developer' role to the IDIR in Pathfinder SSO.
+
+Once logged in you can:
+- Upload form templates
+- View templates that have been uploaded in a tabular format
+- Change the 'Deployment Status' of a template
+- Preview a template in Kiln
