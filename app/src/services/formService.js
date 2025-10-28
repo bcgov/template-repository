@@ -32,10 +32,12 @@ const normalizeFormData = (body) => {
       form_id: body.form_id,
       deployed_to: body.deployed_to || DEPLOYMENT_STATUS.NONE,
       dataSources: body.dataSources,
-      data: body.data?.items || body.data,
-      interface: body.interface,
-      scripts: body.data?.scripts || body.scripts,
-      styles: body.data?.styles || body.styles,
+      data: {
+        items: body.data?.items || body.data,
+        scripts: body.data?.scripts || body.scripts,
+        styles: body.data?.styles || body.styles
+      },
+      interface: body.interface
     };
   }
 
