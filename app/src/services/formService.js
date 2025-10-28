@@ -34,8 +34,8 @@ const normalizeFormData = (body) => {
       dataSources: body.dataSources,
       data: body.data?.items || body.data,
       interface: body.interface,
-      scripts: body.scripts,
-      styles: body.styles,
+      scripts: body.data?.scripts || body.scripts,
+      styles: body.data?.styles || body.styles,
     };
   }
 
