@@ -307,6 +307,22 @@ const FormList = () => {
             size: 30,
         },
         {
+            header: "Kiln Format",
+            id: "kiln_format",
+            enableEditing: false,
+            size: 30,
+            Cell: ({ row }) => {
+                const isLegacy = row.original.data && row.original.data.items && !row.original.formversion;
+                return isLegacy ? "v1" : "v2";
+            },
+            filterFn: (row, columnId, filterValue) => {
+                const isLegacy = row.original.data && row.original.data.items && !row.original.formversion;
+                const format = isLegacy ? "v1" : "v2";
+                return format.includes(filterValue.toLowerCase());
+            },
+            filterVariant: "autocomplete",
+        },
+        {
             accessorKey: "form_id",
             header: "Form ID",
             filterVariant: "autocomplete",
@@ -348,8 +364,15 @@ const FormList = () => {
             Cell: ({ row }) => {
                 const handlePreviewClick = () => {
                     const jsonString = JSON.stringify(row.original, null, 2);
-                    const previewURL = process.env.REACT_APP_KILN_PREVIEW_URL;
-                    const targetOrigin = process.env.REACT_APP_KILN_URL;
+
+                    // Detect kiln v1 format: has data.items (kiln v1) vs formversion.elements (kiln-v2)
+                    const isLegacy = row.original.data && row.original.data.items && !row.original.formversion;
+                    const previewURL = isLegacy
+                        ? process.env.REACT_APP_KILN_LEGACY_PREVIEW_URL || "http://localhost:4173/preview"
+                        : process.env.REACT_APP_KILN_PREVIEW_URL || "http://localhost:5173/preview";
+                    const targetOrigin = isLegacy
+                        ? process.env.REACT_APP_KILN_LEGACY_URL || "http://localhost:4173"
+                        : process.env.REACT_APP_KILN_URL || "http://localhost:5173";
 
                     const newTab = window.open(previewURL, "_blank");
 

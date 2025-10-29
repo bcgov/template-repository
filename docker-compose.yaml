@@ -11,8 +11,8 @@ services:
       - db
     restart: always
     command: >
-      sh -c "node index.js"
-    
+      sh -c "npx knex migrate:latest && node index.js"
+
   db:
     image: postgres:12
     hostname: ${POSTGRES_HOST}
