@@ -9,7 +9,7 @@ const root = ReactDOM.createRoot(document.getElementById("root"));
 
 root.render(
   <React.StrictMode>
-    <SSOProvider idpHint="idir" backendURL={process.env.REACT_APP_SSO_URL}>
+    <SSOProvider idpHint="idir" backendURL={process.env.REACT_APP_SSO_URL} postLoginRedirectURL="/forms">
       <App />
     </SSOProvider>
   </React.StrictMode>
