@@ -253,7 +253,7 @@ const PdfTemplates = () => {
         <MaterialReactTable table={table} />
       )}
       <Modal isOpen={showUpload} onOpenChange={() => setShowUpload(false)}>
-        <Dialog isCloseable role="dialog">
+        <Dialog isCloseable role="dialog" aria-label="Upload PDF Template">
         <div
            style={{
               padding: "1rem",
