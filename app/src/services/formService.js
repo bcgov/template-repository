@@ -17,7 +17,9 @@ const normalizeFormData = (body) => {
       form_id: fv.form_id,
       deployed_to: fv.deployed_to || DEPLOYMENT_STATUS.NONE,
       dataSources: fv.dataSources,
-      data: fv.elements,
+      data: null,
+      form_data: fv.data,
+      elements: fv.elements,
       interface: fv.interface,
       scripts: fv.scripts,
       styles: fv.styles,
@@ -37,6 +39,8 @@ const normalizeFormData = (body) => {
         scripts: body.data?.scripts || body.scripts,
         styles: body.data?.styles || body.styles
       },
+      form_data: null,
+      elements: null,
       interface: body.interface
     };
   }
@@ -78,6 +82,8 @@ const createForm = async (formData) => {
       deployed_to: formData.deployed_to,
       dataSources: formData.dataSources ? JSON.stringify(formData.dataSources) : null,
       data: formData.data ? JSON.stringify(formData.data) : JSON.stringify([]),
+      elements: formData.elements ? JSON.stringify(formData.elements) : null,
+      form_data: formData.form_data ? JSON.stringify(formData.form_data) : null,
       interface: formData.interface ? JSON.stringify(formData.interface) : JSON.stringify([]),
       scripts: formData.scripts ? JSON.stringify(formData.scripts) : null,
       styles: formData.styles ? JSON.stringify(formData.styles) : null,
