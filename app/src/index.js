@@ -3,9 +3,11 @@ require('dotenv').config();
 const fetch = require('node-fetch');
 const express = require('express');
 const path = require('path');
-const formRoutes = require('./formRoutes');
+const formRoutes = require('./routes/formRoutes');
 const { protectedRoute } = require('@bcgov/citz-imb-sso-express');
 const { sso } = require('@bcgov/citz-imb-sso-express');
+const { HTTP_STATUS } = require('./constants');
+const { errorHandler } = require('./middleware/errorHandler');
 
 const app = express();
 const port = process.env.APP_PORT;
@@ -24,14 +26,6 @@ sso(app, {
   },
 });
 
-app.use(express.json());
-
-app.get('/health', (_req, res) => {
-  res.sendStatus(200);
-});
-
-app.use('/api', protectedRoute(), formRoutes);
-
 app.use((req, res, next) => {
   if (!(req.method === 'GET' && req.path === '/health')) {
     console.log(`Incoming request: ${req.method} ${req.url}`);
@@ -39,11 +33,19 @@ app.use((req, res, next) => {
   next();
 });
 
+app.get('/health', (_req, res) => {
+  res.sendStatus(HTTP_STATUS.OK);
+});
+
+app.use('/api', protectedRoute(), formRoutes);
+
 app.use(express.static(path.join(__dirname, '../client/build')));
 
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../client/build', 'index.html'));
 });
+
+app.use(errorHandler);
 
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);

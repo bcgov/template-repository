@@ -1,3 +1,7 @@
 node_modules/
 
 .env
+.idea/
+.cla*
+.local_context/
+app/client/build/
