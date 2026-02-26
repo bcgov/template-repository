@@ -13,6 +13,32 @@ const ENVIRONMENT_OPTIONS = [
     { value: "prod", label: "Production" },
 ];
 
+// Rebuilds the formversion wrapper for V2 forms so exported JSON matches the expected upload format.
+const reconstructExportFormat = (dbRow) => {
+    const isV2 = dbRow.elements != null || dbRow.form_data != null;
+
+    if (!isV2) {
+        return dbRow;
+    }
+
+    return {
+        formversion: {
+            id: dbRow.id,
+            version: dbRow.version,
+            form_id: dbRow.form_id,
+            name: dbRow.title,
+            ministry_id: dbRow.ministry_id,
+            deployed_to: dbRow.deployed_to,
+            dataSources: dbRow.dataSources,
+            data: dbRow.form_data,
+            elements: dbRow.elements,
+            interface: dbRow.interface,
+            scripts: dbRow.scripts,
+            styles: dbRow.styles,
+        }
+    };
+};
+
 const FormList = () => {
     const [forms, setForms] = useState([]);
     const [modalVisible, setModalVisible] = useState(false);
@@ -98,7 +124,7 @@ const FormList = () => {
     }, [fetchForms]);
 
     const handlePreviewJson = (json) => {
-        setSelectedJson(json);
+        setSelectedJson(reconstructExportFormat(json));
     };
 
     useEffect(() => {
@@ -248,7 +274,8 @@ const FormList = () => {
         });
         const link = document.createElement("a");
         link.href = URL.createObjectURL(jsonBlob);
-        link.download = `form_${selectedJson.form_id || "data"}.json`;
+        const formId = selectedJson.formversion?.form_id || selectedJson.form_id || "data";
+        link.download = `form_${formId}.json`;
         link.click();
         URL.revokeObjectURL(link.href);
     };
