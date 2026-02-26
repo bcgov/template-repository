@@ -9,8 +9,10 @@ spec:
   selector:
     matchLabels:
       app: {{ .Release.Name }}-app
-  template:
+  template: 
     metadata:
+      annotations:
+        rollme: {{ randAlphaNum 8 | quote }}
       labels:
         app: {{ .Release.Name }}-app
     spec:
