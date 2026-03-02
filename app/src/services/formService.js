@@ -23,6 +23,7 @@ const normalizeFormData = (body) => {
       interface: fv.interface,
       scripts: fv.scripts,
       styles: fv.styles,
+      barcode: fv.barcode || null,
     };
   } else {
     formData = {
@@ -41,7 +42,8 @@ const normalizeFormData = (body) => {
       },
       form_data: null,
       elements: null,
-      interface: body.interface
+      interface: body.interface,
+      barcode: body.barcode || null,
     };
   }
 
@@ -87,6 +89,7 @@ const createForm = async (formData) => {
       interface: formData.interface ? JSON.stringify(formData.interface) : JSON.stringify([]),
       scripts: formData.scripts ? JSON.stringify(formData.scripts) : null,
       styles: formData.styles ? JSON.stringify(formData.styles) : null,
+      barcode: formData.barcode ? JSON.stringify(formData.barcode) : null,
     });
 
     return { id: formData.id };
