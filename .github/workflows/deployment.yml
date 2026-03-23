@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - dev
+      - staging
       - test
       - main
   workflow_dispatch:
@@ -19,7 +20,6 @@ jobs:
     
     outputs:
       image_tag: ${{ steps.branch_tag.outputs.image_tag }}
-      tools_image_tag: ${{ steps.tools_tag.outputs.tools_image_tag }}
     
     steps:
       - name: Checkout the repository
@@ -61,6 +61,12 @@ jobs:
             echo "REACT_APP_KILN_PREVIEW_URL=${{ secrets.REACT_APP_KILN_PREVIEW_URL_TEST }}" >> $GITHUB_ENV
             echo "REACT_APP_KILN_URL=${{ secrets.REACT_APP_KILN_URL_TEST }}" >> $GITHUB_ENV
 
+          elif [[ "${GITHUB_REF##*/}" == "staging" ]]; then
+            echo "APP_PORT=${{ secrets.APP_PORT_TOOLS }}" >> $GITHUB_ENV
+            echo "REACT_APP_SSO_URL=${{ secrets.REACT_APP_SSO_URL_TOOLS }}" >> $GITHUB_ENV
+            echo "REACT_APP_KILN_PREVIEW_URL=${{ secrets.REACT_APP_KILN_PREVIEW_URL_TOOLS }}" >> $GITHUB_ENV
+            echo "REACT_APP_KILN_URL=${{ secrets.REACT_APP_KILN_URL_TOOLS }}" >> $GITHUB_ENV
+
           else
             echo "APP_PORT=${{ secrets.APP_PORT_DEV }}" >> $GITHUB_ENV
             echo "REACT_APP_SSO_URL=${{ secrets.REACT_APP_SSO_URL_DEV }}" >> $GITHUB_ENV
@@ -80,28 +86,7 @@ jobs:
             APP_PORT=${{ env.APP_PORT }}
             REACT_APP_SSO_URL=${{ env.REACT_APP_SSO_URL }}
             REACT_APP_KILN_PREVIEW_URL=${{ env.REACT_APP_KILN_PREVIEW_URL }}
-            REACT_APP_KILN_URL=${{ env.REACT_APP_KILN_URL }}
-      
-      - name: Set tools tag
-        if: github.ref == 'refs/heads/dev'
-        id: tools_tag
-        run: echo "tools_image_tag=${GITHUB_REF##*/}-tools" >> $GITHUB_OUTPUT
-
-      - name: Build and push Docker image (tools variant)
-        if: github.ref == 'refs/heads/dev'
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          push: true
-          no-cache: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.tools_tag.outputs.tools_image_tag }}
-          labels: ${{ steps.meta.outputs.labels }}
-          build-args: |
-            APP_PORT=${{ env.APP_PORT }}
-            # Use the TOOLS SSO value here as requested:
-            REACT_APP_SSO_URL=${{ secrets.REACT_APP_SSO_URL_TOOLS }}
-            REACT_APP_KILN_PREVIEW_URL=${{ secrets.REACT_APP_KILN_PREVIEW_URL_DEV }}
-            REACT_APP_KILN_URL=${{secrets.REACT_APP_KILN_PREVIEW_URL_DEV}}
+            REACT_APP_KILN_URL=${{ env.REACT_APP_KILN_URL }}  
 
   deploy:
     needs: build_and_push
@@ -118,14 +103,14 @@ jobs:
         uses: redhat-actions/oc-login@v1
         with:
           openshift_server_url: ${{ secrets.OPENSHIFT_SERVER }}
-          namespace: ${{ github.ref == 'refs/heads/main' && secrets.OPENSHIFT_PROD_NAMESPACE || (github.ref == 'refs/heads/dev' && secrets.OPENSHIFT_DEV_NAMESPACE) || secrets.OPENSHIFT_TEST_NAMESPACE }}
-          openshift_token: ${{ github.ref == 'refs/heads/main' && secrets.OPENSHIFT_PROD_TOKEN || (github.ref == 'refs/heads/dev' && secrets.OPENSHIFT_DEV_TOKEN) || secrets.OPENSHIFT_TEST_TOKEN }}
+          namespace: ${{ github.ref == 'refs/heads/main' && secrets.OPENSHIFT_PROD_NAMESPACE || (github.ref == 'refs/heads/dev' && secrets.OPENSHIFT_DEV_NAMESPACE) || (github.ref == 'refs/heads/staging' && secrets.OPENSHIFT_TOOLS_NAMESPACE) || secrets.OPENSHIFT_TEST_NAMESPACE }}
+          openshift_token: ${{ github.ref == 'refs/heads/main' && secrets.OPENSHIFT_PROD_TOKEN || (github.ref == 'refs/heads/dev' && secrets.OPENSHIFT_DEV_TOKEN) || (github.ref == 'refs/heads/staging' && secrets.OPENSHIFT_TOOLS_TOKEN) || secrets.OPENSHIFT_TEST_TOKEN }}
           insecure_skip_tls_verify: true
 
       - name: Deploy with Helm
         run: |
           helm upgrade --install template-repository ./helm \
-          --namespace ${{ github.ref == 'refs/heads/main' && secrets.OPENSHIFT_PROD_NAMESPACE || (github.ref == 'refs/heads/dev' && secrets.OPENSHIFT_DEV_NAMESPACE) || secrets.OPENSHIFT_TEST_NAMESPACE }} \
+          --namespace ${{ github.ref == 'refs/heads/main' && secrets.OPENSHIFT_PROD_NAMESPACE || (github.ref == 'refs/heads/dev' && secrets.OPENSHIFT_DEV_NAMESPACE) || (github.ref == 'refs/heads/staging' && secrets.OPENSHIFT_TOOLS_NAMESPACE) || secrets.OPENSHIFT_TEST_NAMESPACE }} \
           --set app.image.repository=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }} \
           --set app.image.tag=${{ needs.build_and_push.outputs.image_tag }} \
           --set postgresql.image.repository=postgres \
@@ -133,33 +118,7 @@ jobs:
 
       - name: Trigger OpenShift Rollout
         run: |
-          oc rollout restart deployment/template-repository-app -n ${{ github.ref == 'refs/heads/main' && secrets.OPENSHIFT_PROD_NAMESPACE || (github.ref == 'refs/heads/dev' && secrets.OPENSHIFT_DEV_NAMESPACE) || secrets.OPENSHIFT_TEST_NAMESPACE }}
-
-      # Deploy to Tools only if branch = dev
-      - name: Authenticate with OpenShift (tools env)
-        if: github.ref == 'refs/heads/dev'
-        uses: redhat-actions/oc-login@v1
-        with:
-          openshift_server_url: ${{ secrets.OPENSHIFT_SERVER }}
-          namespace: ${{ secrets.OPENSHIFT_TOOLS_NAMESPACE }}
-          openshift_token: ${{ secrets.OPENSHIFT_TOOLS_TOKEN }}
-          insecure_skip_tls_verify: true
-
-      - name: Deploy with Helm (tools env)
-        if: github.ref == 'refs/heads/dev'
-        run: |
-          helm upgrade --install template-repository ./helm \
-            --namespace "${{ secrets.OPENSHIFT_TOOLS_NAMESPACE }}" \
-            --set app.image.repository=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }} \
-            --set app.image.tag=${{ needs.build_and_push.outputs.tools_image_tag }} \
-            --set postgresql.image.repository=postgres \
-            --set postgresql.image.tag=12
-
-      - name: Trigger OpenShift Rollout (tools env)
-        if: github.ref == 'refs/heads/dev'
-        run: |
-          oc rollout restart deployment/template-repository-app \
-            -n "${{ secrets.OPENSHIFT_TOOLS_NAMESPACE }}"
+          oc rollout restart deployment/template-repository-app -n ${{ github.ref == 'refs/heads/main' && secrets.OPENSHIFT_PROD_NAMESPACE || (github.ref == 'refs/heads/dev' && secrets.OPENSHIFT_DEV_NAMESPACE) || (github.ref == 'refs/heads/staging' && secrets.OPENSHIFT_TOOLS_NAMESPACE) || secrets.OPENSHIFT_TEST_NAMESPACE }}
             
   build_and_push_portal:
     runs-on: ubuntu-latest
@@ -206,6 +165,12 @@ jobs:
             echo "REACT_APP_SSO_PORTAL_URL=${{ secrets.REACT_APP_SSO_URL_PORTAL_TEST }}" >> $GITHUB_ENV
             echo "REACT_APP_KILN_PREVIEW_PORTAL_URL=${{ secrets.REACT_APP_KILN_PREVIEW_URL_PORTAL_TEST }}" >> $GITHUB_ENV
             echo "REACT_APP_KILN_PORTAL_URL=${{ secrets.REACT_APP_KILN_URL_PORTAL_TEST }}" >> $GITHUB_ENV
+        
+          elif [[ "${GITHUB_REF##*/}" == "staging" ]]; then
+            echo "APP_PORT=${{ secrets.APP_PORT_TOOLS }}" >> $GITHUB_ENV
+            echo "REACT_APP_SSO_PORTAL_URL=${{ secrets.REACT_APP_SSO_URL_PORTAL_TOOLS }}" >> $GITHUB_ENV
+            echo "REACT_APP_KILN_PREVIEW_PORTAL_URL=${{ secrets.REACT_APP_KILN_PREVIEW_URL_PORTAL_TOOLS }}" >> $GITHUB_ENV
+            echo "REACT_APP_KILN_PORTAL_URL=${{ secrets.REACT_APP_KILN_URL_PORTAL_TOOLS }}" >> $GITHUB_ENV
 
           else
             echo "APP_PORT=${{ secrets.APP_PORT_DEV }}" >> $GITHUB_ENV
@@ -243,14 +208,14 @@ jobs:
         uses: redhat-actions/oc-login@v1
         with:
           openshift_server_url: ${{ secrets.OPENSHIFT_SERVER }}
-          namespace: ${{ github.ref == 'refs/heads/main' && secrets.OPENSHIFT_PROD_PORTAL_NAMESPACE || (github.ref == 'refs/heads/dev' && secrets.OPENSHIFT_DEV_PORTAL_NAMESPACE) || secrets.OPENSHIFT_TEST_PORTAL_NAMESPACE }}
-          openshift_token: ${{ github.ref == 'refs/heads/main' && secrets.OPENSHIFT_PROD_PORTAL_TOKEN || (github.ref == 'refs/heads/dev' && secrets.OPENSHIFT_DEV_PORTAL_TOKEN) || secrets.OPENSHIFT_TEST_PORTAL_TOKEN }}
+          namespace: ${{ github.ref == 'refs/heads/main' && secrets.OPENSHIFT_PROD_PORTAL_NAMESPACE || (github.ref == 'refs/heads/dev' && secrets.OPENSHIFT_DEV_PORTAL_NAMESPACE) || (github.ref == 'refs/heads/staging' && secrets.OPENSHIFT_TOOLS_PORTAL_NAMESPACE) || secrets.OPENSHIFT_TEST_PORTAL_NAMESPACE }}
+          openshift_token: ${{ github.ref == 'refs/heads/main' && secrets.OPENSHIFT_PROD_PORTAL_TOKEN || (github.ref == 'refs/heads/dev' && secrets.OPENSHIFT_DEV_PORTAL_TOKEN) || (github.ref == 'refs/heads/staging' && secrets.OPENSHIFT_TOOLS_PORTAL_TOKEN) || secrets.OPENSHIFT_TEST_PORTAL_TOKEN }}
           insecure_skip_tls_verify: true
 
       - name: Deploy with Helm
         run: |
           helm upgrade --install template-repository ./helm \
-          --namespace ${{ github.ref == 'refs/heads/main' && secrets.OPENSHIFT_PROD_PORTAL_NAMESPACE || (github.ref == 'refs/heads/dev' && secrets.OPENSHIFT_DEV_PORTAL_NAMESPACE) || secrets.OPENSHIFT_TEST_PORTAL_NAMESPACE }} \
+          --namespace ${{ github.ref == 'refs/heads/main' && secrets.OPENSHIFT_PROD_PORTAL_NAMESPACE || (github.ref == 'refs/heads/dev' && secrets.OPENSHIFT_DEV_PORTAL_NAMESPACE) || (github.ref == 'refs/heads/staging' && secrets.OPENSHIFT_TOOLS_PORTAL_NAMESPACE) || secrets.OPENSHIFT_TEST_PORTAL_NAMESPACE }} \
           --set app.image.repository=${{ env.REGISTRY }}/${{ env.PORTAL_IMAGE_NAME }} \
           --set app.image.tag=${{ needs.build_and_push_portal.outputs.image_tag }} \
           --set postgresql.image.repository=postgres \
@@ -258,4 +223,4 @@ jobs:
 
       - name: Trigger OpenShift Rollout
         run: |
-          oc rollout restart deployment/template-repository-app -n ${{ github.ref == 'refs/heads/main' && secrets.OPENSHIFT_PROD_PORTAL_NAMESPACE || (github.ref == 'refs/heads/dev' && secrets.OPENSHIFT_DEV_PORTAL_NAMESPACE) || secrets.OPENSHIFT_TEST_PORTAL_NAMESPACE }}
+          oc rollout restart deployment/template-repository-app -n ${{ github.ref == 'refs/heads/main' && secrets.OPENSHIFT_PROD_PORTAL_NAMESPACE || (github.ref == 'refs/heads/dev' && secrets.OPENSHIFT_DEV_PORTAL_NAMESPACE) || (github.ref == 'refs/heads/staging' && secrets.OPENSHIFT_TOOLS_PORTAL_NAMESPACE) || secrets.OPENSHIFT_TEST_PORTAL_NAMESPACE }}
