@@ -1,4 +1,4 @@
-FROM node:20
+FROM node:24
 
 WORKDIR /usr/app
 
@@ -6,6 +6,7 @@ COPY ./.env ./.env
 
 # Express App
 COPY ./app/src/package*.json ./src/
+COPY ./app/src/patches ./src/patches
 RUN npm install --prefix ./src
 
 COPY ./app/src ./src
