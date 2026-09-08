@@ -6,7 +6,16 @@ const { TABLE_NAMES } = require('../constants');
 const PETS_BASE_URL = process.env.PETS_BASE_URL;
 
 const getAllPdfTemplates = async () => {
-  return await db(TABLE_NAMES.PDF_TEMPLATES).select('*');
+  return await db(TABLE_NAMES.PDF_TEMPLATES).select(
+    'id',
+    'name',
+    'version',
+    'storage_location',
+    'template_uuid',
+    'file_name',
+    'content_type',
+    'notes'
+  );
 };
 
 const uploadToPets = async (fileBuffer, filename, mimetype) => {
@@ -30,14 +39,27 @@ const uploadToPets = async (fileBuffer, filename, mimetype) => {
   return templateUuid;
 };
 
-const createPdfTemplate = async (name, version, templateUuid, notes = null) => {
+const createPdfTemplate = async ({
+  name,
+  version,
+  storageLocation,
+  templateUuid = null,
+  templateData = null,
+  fileName = null,
+  contentType = null,
+  notes = null,
+}) => {
   const id = uuidv4();
 
   await db(TABLE_NAMES.PDF_TEMPLATES).insert({
     id,
     name,
     version,
+    storage_location: storageLocation,
     template_uuid: templateUuid,
+    template_data: templateData,
+    file_name: fileName,
+    content_type: contentType,
     notes,
   });
 
@@ -102,6 +124,22 @@ const renderPdfWithPets = async (templateUuid, data) => {
   };
 };
 
+const getPdfTemplateFileById = async (id) => {
+  return await db(TABLE_NAMES.PDF_TEMPLATES)
+    .select(
+      'id',
+      'name',
+      'version',
+      'storage_location',
+      'template_uuid',
+      'template_data',
+      'file_name',
+      'content_type'
+    )
+    .where({ id })
+    .first();
+};
+
 module.exports = {
   getAllPdfTemplates,
   uploadToPets,
@@ -109,4 +147,5 @@ module.exports = {
   getPdfTemplateById,
   downloadTemplateFromPets,
   renderPdfWithPets,
+  getPdfTemplateFileById,
 };

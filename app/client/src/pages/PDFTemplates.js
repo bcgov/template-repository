@@ -6,7 +6,8 @@ import {
   Modal,
   Dialog,
   TextField,
-  TextArea
+  TextArea,
+  Select
 } from "@bcgov/design-system-react-components";
 import { MaterialReactTable, useMaterialReactTable } from "material-react-table";
 import { useSSO } from "@bcgov/citz-imb-sso-react";
@@ -29,6 +30,8 @@ const PdfTemplates = () => {
    const [version, setVersion] = useState("");
    const [notes, setNotes] = useState("");
    const [file, setFile] = useState(null);
+   const [storageLocation, setStorageLocation] = useState('pets');
+   const repositoryOptions = [{id: "template_repository",label: "Template Repository",},{id: "pets",label: "PETS",}];
 
   const flashAlert = (info, ms = 1500) => {
     setAlertInfo(info);
@@ -77,16 +80,23 @@ const PdfTemplates = () => {
         size: 10,
       },
       {
+        accessorKey: "storage_location",
+        header: "Repository",
+        Cell: ({ cell }) =>
+          cell.getValue() === "pets"
+            ? "PETS"
+            : "Template Repository",
+      },
+      {
         id: "download",
         header: "File Download",
         Cell: ({ row }) => (
           <Button
           variant="secondary"
           onPress={async () => {
-            const { template_uuid } = row.original;
 
             try {
-              const response = await fetch(`/api/template/${template_uuid}`, {
+              const response = await fetch(`/api/pdf-templates/${row.original.id}/download`, {
                 method: "GET",
                 headers: {
                   Authorization: getAuthorizationHeaderValue(),
@@ -96,16 +106,16 @@ const PdfTemplates = () => {
               if (!response.ok) throw new Error("Download failed");
 
               const blob = await response.blob();
-              const contentType = response.headers.get("Content-Type");
-
-              const extension = contentType.includes("opendocument") ? "odt"
-                              : contentType.includes("wordprocessingml") ? "docx"
-                              : "bin";
 
               const url = window.URL.createObjectURL(blob);
               const a = document.createElement("a");
               a.href = url;
-              a.download = `${row.original.name || "download"}.${extension}`;
+
+              a.download =
+                row.original.file_name ||
+                row.original.name ||
+                "download";
+
               document.body.appendChild(a);
               a.click();
               a.remove();
@@ -131,9 +141,10 @@ const PdfTemplates = () => {
             formData.append("libre_office_template", file);
             formData.append("pdf_template_name", name);
             formData.append("pdf_template_version", version);
+            formData.append("storage_location", storageLocation);
             if (notes) formData.append("pdf_template_notes", notes);
       
-            const res = await fetch("/api/newPETStemplate", {
+            const res = await fetch("/api/pdf-templates", {
               method: "POST",
               headers: {
                 Authorization: getAuthorizationHeaderValue(),
@@ -255,17 +266,8 @@ const PdfTemplates = () => {
       <Modal isOpen={showUpload} onOpenChange={() => setShowUpload(false)}>
         <Dialog isCloseable role="dialog" aria-label="Upload PDF Template">
         <div
-           style={{
-              padding: "1rem",
-              display: "flex",
-              flexDirection: "column",
-              gap: "1rem",
-              maxWidth: "600px",       
-            maxHeight: "80vh",      
-             overflowY: "auto",       
-              boxSizing: "border-box", 
-            }}
-          >
+          className="pdf-upload-dialog"
+        >
             <h2>Upload PDF Template</h2>
             <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
               <label 
@@ -300,6 +302,13 @@ const PdfTemplates = () => {
                 )}
               </div>
             </div>
+            <Select
+              label="Repository"
+              items={repositoryOptions}
+              selectedKey={storageLocation}
+              onSelectionChange={(key) => setStorageLocation(String(key))}
+              size="medium"
+            />
             <TextField
               label="Template Name"
               isRequired

@@ -12,30 +12,58 @@ const getAllPdfTemplates = async (req, res, next) => {
 
 const uploadPdfTemplate = async (req, res, next) => {
   try {
-    const { pdf_template_name, pdf_template_version, pdf_template_notes } = req.body;
+    const {
+      pdf_template_name,
+      pdf_template_version,
+      pdf_template_notes,
+      storage_location,
+    } = req.body;
+
     const file = req.file;
 
     if (!file || !pdf_template_name || !pdf_template_version) {
-      const error = new Error('name, version and template file are all required');
+      const error = new Error(
+        'name, version and template file are all required'
+      );
       error.statusCode = HTTP_STATUS.BAD_REQUEST;
       throw error;
     }
 
-    const templateUuid = await pdfService.uploadToPets(
-      file.buffer,
-      file.originalname,
-      file.mimetype
-    );
+    if (!['pets', 'template_repository'].includes(storage_location)) {
+      const error = new Error('Invalid storage location');
+      error.statusCode = HTTP_STATUS.BAD_REQUEST;
+      throw error;
+    }
 
-    const result = await pdfService.createPdfTemplate(
-      pdf_template_name,
-      pdf_template_version,
+    let templateUuid = null;
+    let templateData = null;
+
+    if (storage_location === 'pets') {
+      // Store template in PETS
+      templateUuid = await pdfService.uploadToPets(
+        file.buffer,
+        file.originalname,
+        file.mimetype
+      );
+    } else {
+      // Store template in PDF Table
+      templateData = file.buffer;
+    }
+
+    const result = await pdfService.createPdfTemplate({
+      name: pdf_template_name,
+      version: pdf_template_version,
+      storageLocation: storage_location,
       templateUuid,
-      pdf_template_notes
-    );
+      templateData,
+      fileName: file.originalname,
+      contentType: file.mimetype,
+      notes: pdf_template_notes,
+    });
 
     return res.status(HTTP_STATUS.CREATED).json({
       id: result.id,
+      storage_location,
       message: 'PDF template saved successfully',
     });
   } catch (err) {
@@ -60,6 +88,48 @@ const downloadTemplate = async (req, res, next) => {
     res.setHeader('Content-Disposition', `attachment; filename="${template_uuid}.${extension}"`);
 
     body.pipe(res);
+  } catch (err) {
+    next(err);
+  }
+};
+
+const downloadPdfTemplate = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    const template = await pdfService.getPdfTemplateFileById(id);
+
+    if (!template) {
+      const error = new Error('PDF template not found');
+      error.statusCode = HTTP_STATUS.NOT_FOUND;
+      throw error;
+    }
+
+    if (template.storage_location === 'pets') {
+      const { body, contentType } =
+        await pdfService.downloadTemplateFromPets(template.template_uuid);
+
+      res.setHeader('Content-Type', contentType);
+
+      res.setHeader(
+        'Content-Disposition',
+        `attachment; filename="${template.file_name || template.name}"`
+      );
+
+      return body.pipe(res);
+    }
+
+    res.setHeader(
+      'Content-Type',
+      template.content_type || 'application/octet-stream'
+    );
+
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename="${template.file_name || template.name}"`
+    );
+
+    return res.send(template.template_data);
   } catch (err) {
     next(err);
   }
@@ -103,4 +173,5 @@ module.exports = {
   uploadPdfTemplate,
   downloadTemplate,
   renderPdf,
+  downloadPdfTemplate,
 };
