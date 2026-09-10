@@ -151,7 +151,10 @@ const PdfTemplates = () => {
               },
               body: formData,
             });
-            if (!res.ok) throw new Error(`Upload failed: ${res.status}`);
+            if (!res.ok) {
+              const data = await res.json();
+              throw new Error(data.error || `Upload failed: ${res.status}`);
+            }
       // refresh table
       await fetchPdfTemplates();
       setShowUpload(false);
@@ -162,7 +165,6 @@ const PdfTemplates = () => {
       setErrorModal(""); 
       flashAlert({ title: "Uploaded", description: "PDF template saved", variant: "success" });
     } catch (e) {
-      setError(e.message);
       setErrorModal(e.message);
     }
   };

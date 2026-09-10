@@ -35,6 +35,12 @@ const uploadPdfTemplate = async (req, res, next) => {
       throw error;
     }
 
+    if (await pdfService.pdfTemplateExists(pdf_template_name,pdf_template_version)) {
+      const error = new Error(`Version ${pdf_template_version} already exists for ${pdf_template_name}`);
+      error.statusCode = HTTP_STATUS.BAD_REQUEST;
+      throw error;
+    }
+
     let templateUuid = null;
     let templateData = null;
 
@@ -168,10 +174,51 @@ const renderPdf = async (req, res, next) => {
   }
 };
 
+const downloadPdfTemplateByFormName = async (req, res, next) => {
+  try {
+    const template = await pdfService.getPdfTemplateFileByName(
+      req.params.form_name,
+      req.query.version
+    );
+
+    if (!template) {
+      const error = new Error('PDF template not found');
+      error.statusCode = HTTP_STATUS.NOT_FOUND;
+      throw error;
+    }
+
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename="${template.file_name}"`
+    );
+
+    if (template.storage_location === 'pets') {
+      const { body, contentType } =
+        await pdfService.downloadTemplateFromPets(template.template_uuid);
+
+      res.setHeader('Content-Type', contentType);
+      return body.pipe(res);
+    }
+
+    res.setHeader(
+      'Content-Type',
+      template.file_name.endsWith('.docx')
+        ? 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        : 'application/vnd.oasis.opendocument.text'
+    );
+
+
+    return res.send(template.template_data);
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = {
   getAllPdfTemplates,
   uploadPdfTemplate,
   downloadTemplate,
   renderPdf,
   downloadPdfTemplate,
+  downloadPdfTemplateByFormName
 };

@@ -140,6 +140,35 @@ const getPdfTemplateFileById = async (id) => {
     .first();
 };
 
+const getPdfTemplateFileByName = async (name, version) => {
+  const query = db(TABLE_NAMES.PDF_TEMPLATES)
+    .select(
+      'id',
+      'name',
+      'version',
+      'storage_location',
+      'template_uuid',
+      'template_data',
+      'file_name',
+      'content_type'
+    )
+    .where({ name });
+
+  if (version) {
+    query.where({ version });
+  } else {
+    query.orderByRaw('version::int DESC');
+  }
+
+  return await query.first();
+};
+
+const pdfTemplateExists = async (name, version) => {
+  return !!(await db(TABLE_NAMES.PDF_TEMPLATES)
+    .where({ name, version })
+    .first());
+};
+
 module.exports = {
   getAllPdfTemplates,
   uploadToPets,
@@ -148,4 +177,6 @@ module.exports = {
   downloadTemplateFromPets,
   renderPdfWithPets,
   getPdfTemplateFileById,
+  getPdfTemplateFileByName,
+  pdfTemplateExists,
 };
