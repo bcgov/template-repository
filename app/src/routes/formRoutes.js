@@ -25,11 +25,6 @@ router.get(
   protectedRoute(),
   pdfController.downloadPdfTemplate
 );
-router.get(
-  '/pdf-templates/form/:form_name',
-  protectedRoute(),
-  pdfController.downloadPdfTemplateByFormName
-);
 router.get('/template/:template_uuid', protectedRoute(), pdfController.downloadTemplate);
 router.post('/pdfRender/:id', protectedRoute(), pdfController.renderPdf);
 

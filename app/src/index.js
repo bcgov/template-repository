@@ -4,10 +4,12 @@ const fetch = require('node-fetch');
 const express = require('express');
 const path = require('path');
 const formRoutes = require('./routes/formRoutes');
+const templateRoutes = require('./routes/templateRoutes');
 const { protectedRoute } = require('@bcgov/citz-imb-sso-express');
 const { sso } = require('@bcgov/citz-imb-sso-express');
 const { HTTP_STATUS } = require('./constants');
 const { errorHandler } = require('./middleware/errorHandler');
+const { integrationAuth } = require('./middleware/integrationAuth');
 
 const app = express();
 const port = process.env.APP_PORT;
@@ -37,6 +39,7 @@ app.get('/health', (_req, res) => {
   res.sendStatus(HTTP_STATUS.OK);
 });
 
+app.use('/api/pdf-templates/form', integrationAuth, templateRoutes);
 app.use('/api', protectedRoute(), formRoutes);
 
 app.use(express.static(path.join(__dirname, '../client/build')));
