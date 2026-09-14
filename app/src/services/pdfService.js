@@ -25,11 +25,17 @@ const uploadToPets = async (fileBuffer, filename, mimetype) => {
     contentType: mimetype,
   });
 
-  const response = await fetch(`${PETS_BASE_URL}/api/v2/template`, {
-    method: 'POST',
-    headers: form.getHeaders(),
-    body: form,
-  });
+  try {
+    response = await fetch(`${PETS_BASE_URL}/api/v2/template`, {
+      method: 'POST',
+      headers: form.getHeaders(),
+      body: form,
+    });
+  } catch (err) {
+    throw new Error(
+      'Unable to connect to PETS. The PETS service may be unavailable or not running.'
+    );
+  }
 
   if (!response.ok) {
     throw new Error(`PETS service error: ${response.status}`);
