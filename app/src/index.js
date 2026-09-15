@@ -28,6 +28,14 @@ sso(app, {
   },
 });
 
+var RateLimit = require('express-rate-limit');
+var limiter = RateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 500, // max 500 requests per windowMs
+});
+
+app.use(limiter);
+
 app.use((req, res, next) => {
   if (!(req.method === 'GET' && req.path === '/health')) {
     console.log(`Incoming request: ${req.method} ${req.url}`);
