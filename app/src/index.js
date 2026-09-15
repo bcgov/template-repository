@@ -30,8 +30,8 @@ sso(app, {
 
 var RateLimit = require('express-rate-limit');
 var limiter = RateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 500, // max 500 requests per windowMs
+  windowMs: 15 * 60 * 1000, 
+  max: 500, 
 });
 
 app.use(limiter);
