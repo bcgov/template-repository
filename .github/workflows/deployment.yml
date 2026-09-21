@@ -91,6 +91,7 @@ jobs:
   deploy:
     needs: build_and_push
     runs-on: ubuntu-latest
+    environment: ${{ github.ref == 'refs/heads/main' && 'prod-formfoundry' || (github.ref == 'refs/heads/dev' && 'dev-formfoundry') || github.ref == 'refs/heads/test' && 'test-formfoundry' }}
 
     steps:
       - name: Checkout the repository
@@ -122,6 +123,7 @@ jobs:
             
   build_and_push_portal:
     runs-on: ubuntu-latest
+    
     
     outputs:
       image_tag: ${{ steps.branch_tag.outputs.image_tag }}
@@ -196,6 +198,7 @@ jobs:
   deploy_to_portal:
     needs: build_and_push_portal
     runs-on: ubuntu-latest
+    environment: ${{ github.ref == 'refs/heads/main' && 'prod-formfoundry-portal' || (github.ref == 'refs/heads/dev' && 'dev-formfoundry-portal') || github.ref == 'refs/heads/test' && 'test-formfoundry-portal' }}
 
     steps:
       - name: Checkout the repository

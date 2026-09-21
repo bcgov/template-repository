@@ -1,0 +1,16 @@
+diff --git a/node_modules/@bcgov/citz-imb-sso-express/build/index.js b/node_modules/@bcgov/citz-imb-sso-express/build/index.js
+index a4b071c..c0546d1 100644
+--- a/node_modules/@bcgov/citz-imb-sso-express/build/index.js
++++ b/node_modules/@bcgov/citz-imb-sso-express/build/index.js
+@@ -2504,9 +2504,9 @@ const isJWTValid = async (jwt) => {
+ const getNewTokens = async (refresh_token) => {
+     if (!refresh_token || refresh_token === '')
+         return null;
+-    const isTokenValid = await isJWTValid(refresh_token);
++    /*const isTokenValid = await isJWTValid(refresh_token);
+     if (!isTokenValid)
+-        return null;
++        return null;*/
+     const params = {
+         grant_type: 'refresh_token',
+         client_id: SSO_CLIENT_ID,

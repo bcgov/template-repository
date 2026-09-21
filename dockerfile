@@ -5,6 +5,7 @@ WORKDIR /usr/app
 
 # Copy and install backend dependencies
 COPY ./app/src/package*.json ./src/
+COPY ./app/src/patches ./src/patches
 RUN npm install --prefix ./src
 
 COPY ./app/src ./src
