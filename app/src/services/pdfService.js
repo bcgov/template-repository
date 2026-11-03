@@ -6,7 +6,16 @@ const { TABLE_NAMES } = require('../constants');
 const PETS_BASE_URL = process.env.PETS_BASE_URL;
 
 const getAllPdfTemplates = async () => {
-  return await db(TABLE_NAMES.PDF_TEMPLATES).select('*');
+  return await db(TABLE_NAMES.PDF_TEMPLATES).select(
+    'id',
+    'name',
+    'version',
+    'storage_location',
+    'template_uuid',
+    'file_name',
+    'content_type',
+    'notes'
+  );
 };
 
 const uploadToPets = async (fileBuffer, filename, mimetype) => {
@@ -16,11 +25,17 @@ const uploadToPets = async (fileBuffer, filename, mimetype) => {
     contentType: mimetype,
   });
 
-  const response = await fetch(`${PETS_BASE_URL}/api/v2/template`, {
-    method: 'POST',
-    headers: form.getHeaders(),
-    body: form,
-  });
+  try {
+    response = await fetch(`${PETS_BASE_URL}/api/v2/template`, {
+      method: 'POST',
+      headers: form.getHeaders(),
+      body: form,
+    });
+  } catch (err) {
+    throw new Error(
+      'Unable to connect to PETS. The PETS service may be unavailable or not running.'
+    );
+  }
 
   if (!response.ok) {
     throw new Error(`PETS service error: ${response.status}`);
@@ -30,14 +45,27 @@ const uploadToPets = async (fileBuffer, filename, mimetype) => {
   return templateUuid;
 };
 
-const createPdfTemplate = async (name, version, templateUuid, notes = null) => {
+const createPdfTemplate = async ({
+  name,
+  version,
+  storageLocation,
+  templateUuid = null,
+  templateData = null,
+  fileName = null,
+  contentType = null,
+  notes = null,
+}) => {
   const id = uuidv4();
 
   await db(TABLE_NAMES.PDF_TEMPLATES).insert({
     id,
     name,
     version,
+    storage_location: storageLocation,
     template_uuid: templateUuid,
+    template_data: templateData,
+    file_name: fileName,
+    content_type: contentType,
     notes,
   });
 
@@ -102,6 +130,51 @@ const renderPdfWithPets = async (templateUuid, data) => {
   };
 };
 
+const getPdfTemplateFileById = async (id) => {
+  return await db(TABLE_NAMES.PDF_TEMPLATES)
+    .select(
+      'id',
+      'name',
+      'version',
+      'storage_location',
+      'template_uuid',
+      'template_data',
+      'file_name',
+      'content_type'
+    )
+    .where({ id })
+    .first();
+};
+
+const getPdfTemplateFileByName = async (name, version) => {
+  const query = db(TABLE_NAMES.PDF_TEMPLATES)
+    .select(
+      'id',
+      'name',
+      'version',
+      'storage_location',
+      'template_uuid',
+      'template_data',
+      'file_name',
+      'content_type'
+    )
+    .where({ name });
+
+  if (version) {
+    query.where({ version });
+  } else {
+    query.orderByRaw('version::int DESC');
+  }
+
+  return await query.first();
+};
+
+const pdfTemplateExists = async (name, version) => {
+  return !!(await db(TABLE_NAMES.PDF_TEMPLATES)
+    .where({ name, version })
+    .first());
+};
+
 module.exports = {
   getAllPdfTemplates,
   uploadToPets,
@@ -109,4 +182,7 @@ module.exports = {
   getPdfTemplateById,
   downloadTemplateFromPets,
   renderPdfWithPets,
+  getPdfTemplateFileById,
+  getPdfTemplateFileByName,
+  pdfTemplateExists,
 };

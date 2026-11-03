@@ -13,9 +13,9 @@
   max-width: 100% !important;
 }
 
-.bcds-react-aria-TextArea--Input {
+/* .bcds-react-aria-TextArea--Input {
   height: 73vh !important;
-}
+} */
 
 .dialog-container {
   display: flex;
@@ -31,10 +31,10 @@
 }
 
 .small-notes textarea {
-  height: 150px !important;    /* about one-third of a typical modal */
-  min-height: 150px !important;
+  height: 110px !important;
+  min-height: 110px !important;
   max-height: 150px !important;
-  resize: vertical;            /* user can still drag to resize taller */
+  resize: vertical;
 }
 
 .dropzone {
@@ -43,7 +43,7 @@
   text-align: center;
   border-radius: 8px;
   cursor: pointer;
-  min-height: 7rem;
+  min-height: 5rem;
   justify-content: center;   
   align-items: center;   
   display: flex; 
@@ -51,4 +51,17 @@
 .dropzone p {
   margin: 0;
   font-size: 0.9rem;
+}
+
+.pdf-upload-dialog {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1.25rem;
+  width: 100%;
+}
+
+.bcds-react-aria-Select--Popover {
+  min-width: 320px;
 }

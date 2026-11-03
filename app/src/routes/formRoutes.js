@@ -15,10 +15,15 @@ router.put('/forms/update', protectedRoute(), formController.updateFormDeploymen
 
 router.get('/pdf-templates-list', protectedRoute(), pdfController.getAllPdfTemplates);
 router.post(
-  '/newPETStemplate',
+  '/pdf-templates',
   protectedRoute(),
   upload.single('libre_office_template'),
   pdfController.uploadPdfTemplate
+);
+router.get(
+  '/pdf-templates/:id/download',
+  protectedRoute(),
+  pdfController.downloadPdfTemplate
 );
 router.get('/template/:template_uuid', protectedRoute(), pdfController.downloadTemplate);
 router.post('/pdfRender/:id', protectedRoute(), pdfController.renderPdf);
